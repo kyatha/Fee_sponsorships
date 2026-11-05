@@ -29,19 +29,23 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
 [hidden] { display: none !important }
 .wrap { max-width: 860px; margin: 0 auto }
-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; border-bottom: 1px solid var(--line) }
-.brand { font-family: var(--display); font-size: 24px; font-weight: 600; letter-spacing: -0.01em }
-.brand small { display: block; font-family: var(--body); font-size: 13px; font-weight: 400; color: var(--muted); letter-spacing: 0 }
-nav { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; flex-wrap: wrap }
-nav a { text-decoration: none; color: var(--muted); padding: 6px 14px; border-radius: 999px; font-weight: 500; font-size: 14px }
+header { display: grid; gap: 16px; padding-block: 24px 20px; border-bottom: 1px solid var(--line) }
+.brand { font-family: var(--display); font-size: clamp(32px, 6vw, 44px); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em }
+.brand small { display: block; margin-top: 4px; font-family: var(--body); font-size: 15px; font-weight: 400; color: var(--muted); letter-spacing: 0 }
+nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px }
+@media (max-width: 600px) { nav { grid-template-columns: repeat(2, 1fr); border-radius: 14px } nav a { border-radius: 10px } }
+nav a { text-decoration: none; color: var(--muted); padding: 9px 10px; border-radius: 999px; font-weight: 500; font-size: 15px; text-align: center }
+nav a:hover { color: var(--accent) }
 nav a[aria-current="page"] { background: var(--accent); color: var(--surface) }
 .demo { margin-top: 16px; font-size: 13px; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between }
 .demo button { padding: 4px 10px; font-size: 13px }
 h1 { font-family: var(--display); font-weight: 500; font-size: 32px; line-height: 1.15; margin: 28px 0 6px; text-wrap: balance }
 h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 32px 0 10px }
-.lede { color: var(--muted); max-width: 62ch; margin: 0 0 20px }
-.stats { display: flex; flex-wrap: wrap; gap: 24px; margin: 0 0 20px; font-size: 13px; color: var(--muted) }
-.stats b { display: block; font-family: var(--mono); font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums }
+.lede { color: var(--muted); margin: 0 0 20px; font-size: 16px }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 0 0 20px; font-size: 13px; color: var(--muted); line-height: 1.35 }
+.stats > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px }
+.stats b { display: block; font-family: var(--display); font-weight: 600; font-size: clamp(36px, 5vw, 48px); line-height: 1; margin-bottom: 6px; color: var(--ink); font-variant-numeric: tabular-nums }
+.stats .s-need b { color: var(--accent) } .stats .s-paid b { color: var(--paid) } .stats .s-pool b, .stats .s-promised b { color: var(--pledged) }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px }
 select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
 .filters select { width: auto; max-width: 100% }
@@ -152,6 +156,7 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
   <main id="view-board">
     <h1>African applicants to UMass Amherst waiting on a fee</h1>
     <p class="lede">Tap an applicant to read their research statement. Cover the whole $90 fee, or chip in part and pool with others. Nobody pays until a fee is fully pledged; then everyone has 24 hours to pay their share.</p>
+    <div class="stats" id="stats"></div>
     <details class="codebox" id="code-box"><summary>Already pledged? Enter your pledge code</summary>
       <form id="code-form" novalidate class="grid2" style="margin-top:12px">
         <div class="field"><label for="c-code">Pledge code</label><input id="c-code" placeholder="PL-XXXX"></div>
@@ -161,7 +166,6 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
       </form></details>
     <div id="mine"></div>
     <div id="pools"></div>
-    <div class="stats" id="stats"></div>
     <div class="filters">
       <select id="f-field" aria-label="Filter by research area"><option value="">All research areas</option></select>
       <select id="f-country" aria-label="Filter by country"><option value="">All countries</option></select>
@@ -624,11 +628,11 @@ function renderBoard() {
   if (!loaded) { $("cards").innerHTML = `<p class="lede">${loadError ? esc(loadError) : "Loading applicants…"}</p>`; $("stats").innerHTML = ""; return; }
   const S = data.students, need = S.filter(s => s.status === "open" || s.status === "pooling");
   $("stats").innerHTML = `
-    <div><b>${need.length}</b>fees still need sponsors</div>
-    <div><b>${usd(need.reduce((a, s) => a + s.pool.left, 0))}</b>still needed</div>
-    <div><b>${S.filter(s => s.status === "pooling").length}</b>pools filling</div>
-    <div><b>${S.filter(s => s.status === "paid").length}</b>paid</div>
-    ${data.promised ? `<div><b>${data.promised}</b>more fees promised by committed sponsors for Fall ${data.cycle}</div>` : ""}`;
+    <div class="s-need"><b>${need.length}</b>fees still need sponsors</div>
+    <div class="s-need"><b>${usd(need.reduce((a, s) => a + s.pool.left, 0))}</b>still needed</div>
+    <div class="s-pool"><b>${S.filter(s => s.status === "pooling").length}</b>pools filling</div>
+    <div class="s-paid"><b>${S.filter(s => s.status === "paid").length}</b>fees paid</div>
+    ${data.promised ? `<div class="s-promised"><b>${data.promised}</b>more promised by committed sponsors for Fall ${data.cycle}</div>` : ""}`;
 
   const mineList = Object.values(views);
   $("mine").innerHTML = mineList.length ? `<h2 class="h3">Your pledges</h2>` + mineList.map(v => `
