@@ -1,0 +1,652 @@
+{
+ "school": "UMass Amherst",
+ "fee_usd": 90,
+ "fee_note": "Flat $90 per application, credit card only, per umass.edu/graduate/apply/how-apply (checked 2026-11-05)",
+ "source": "Pasted by Chadha from umass.edu/graduate/academics/programs on 2026-11-05; list ends at Theater and may be cut off",
+ "level_notes": "Polymer Science lists its PhD under an ms-phd page and Philosophy under master-arts-phd, so they are recorded as MS/PhD and MA/PhD",
+ "programs": [
+  {
+   "program": "Accounting",
+   "degrees": [
+    "4+1 Accelerated",
+    "Certificate",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Afro-American Studies",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Animal Biotechnology & Biomedical Sciences",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Anthropology",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Architecture",
+   "degrees": [
+    "MArch",
+    "MArch + MDesign",
+    "MLA + MArch",
+    "MRP + MArch"
+   ]
+  },
+  {
+   "program": "Art",
+   "degrees": [
+    "MA",
+    "MFA"
+   ]
+  },
+  {
+   "program": "Astronomy",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Biomedical Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Biostatistics: Public Health",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Business Analytics",
+   "degrees": [
+    "Certificate",
+    "4+1 Accelerated",
+    "MBA + MSBA",
+    "MSBA"
+   ]
+  },
+  {
+   "program": "Chemical Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MSChE",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Chemistry",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Chinese",
+   "degrees": [
+    "MA"
+   ]
+  },
+  {
+   "program": "Civil Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "MSCE + MRP",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Communication",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Community Health Education: Public Health",
+   "degrees": [
+    "4+1 Accelerated",
+    "MPH",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Comparative Literature",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Computer Science",
+   "degrees": [
+    "Certificate",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Data Analytics and Computational Social Science",
+   "degrees": [
+    "Certificate",
+    "4+1 Accelerated",
+    "MS"
+   ]
+  },
+  {
+   "program": "Design",
+   "degrees": []
+  },
+  {
+   "program": "Earth, Geographic, and Climate Sciences",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Economics",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Education",
+   "degrees": [
+    "4+1 Accelerated",
+    "Certificate",
+    "MEd",
+    "MEd + EdS",
+    "MEd + MPPA",
+    "EdS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Education: School Counselor",
+   "degrees": [
+    "MEd + EdS"
+   ]
+  },
+  {
+   "program": "Electrical and Computer Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Engineering Management",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS"
+   ]
+  },
+  {
+   "program": "English",
+   "degrees": [
+    "MA",
+    "MFA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Environmental Conservation",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Environmental Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Environmental Health Sciences: Public Health",
+   "degrees": [
+    "MPH",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Epidemiology: Public Health",
+   "degrees": [
+    "4+1 Accelerated",
+    "MPH",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Finance",
+   "degrees": [
+    "4+1 Accelerated",
+    "MBA + MF",
+    "MFA",
+    "MFin"
+   ]
+  },
+  {
+   "program": "Food Science",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "French & Francophone Studies",
+   "degrees": [
+    "MA",
+    "MAT"
+   ]
+  },
+  {
+   "program": "Geography",
+   "degrees": [
+    "MS",
+    "MRP + MS"
+   ]
+  },
+  {
+   "program": "German and Scandinavian Studies",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Health Policy and Management: Public Health",
+   "degrees": [
+    "4+1 Accelerated",
+    "MPH",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Healthcare Administration",
+   "degrees": [
+    "MHA"
+   ]
+  },
+  {
+   "program": "Higher Education Leadership and Administration",
+   "degrees": [
+    "Certificate",
+    "4+1 Accelerated"
+   ]
+  },
+  {
+   "program": "Hispanic Literatures and Linguistics",
+   "degrees": [
+    "MA",
+    "MAT",
+    "PhD"
+   ]
+  },
+  {
+   "program": "History",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "History of Art and Architecture",
+   "degrees": [
+    "MA"
+   ]
+  },
+  {
+   "program": "Industrial Engineering and Operations Research",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Italian Studies",
+   "degrees": [
+    "MAT"
+   ]
+  },
+  {
+   "program": "Japanese",
+   "degrees": [
+    "MA"
+   ]
+  },
+  {
+   "program": "Kinesiology",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Labor Studies",
+   "degrees": [
+    "MS"
+   ]
+  },
+  {
+   "program": "Landscape Architecture",
+   "degrees": [
+    "MLA",
+    "MLA + MArch",
+    "MLA + MRP"
+   ]
+  },
+  {
+   "program": "Latin and Classical Humanities",
+   "degrees": [
+    "MAT"
+   ]
+  },
+  {
+   "program": "Linguistics",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Management",
+   "degrees": [
+    "Certificate",
+    "MBA + MSBA",
+    "MBA + MF",
+    "MSM",
+    "4+1 Accelerated",
+    "MBA",
+    "MBA + MS",
+    "MPPA + MBA"
+   ]
+  },
+  {
+   "program": "Management: Doctoral Program",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Management: Dual Degree Programs",
+   "degrees": [
+    "MBA + MSBA",
+    "MBA + MF",
+    "MBA + MS"
+   ]
+  },
+  {
+   "program": "Manufacturing Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS"
+   ]
+  },
+  {
+   "program": "Materials Science and Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Mathematics",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Mathematics: Applied Mathematics",
+   "degrees": [
+    "MS"
+   ]
+  },
+  {
+   "program": "Mechanical Engineering",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Microbiology",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Microbiology: Applied Molecular Biotechnology",
+   "degrees": []
+  },
+  {
+   "program": "Molecular & Cellular Biology",
+   "degrees": [
+    "4+1 Accelerated",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Music",
+   "degrees": [
+    "MM",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Neuroscience & Behavior",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Nursing",
+   "degrees": [
+    "MS",
+    "PhD",
+    "DNP"
+   ]
+  },
+  {
+   "program": "Nutrition: Public Health",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Organismic & Evolutionary Biology",
+   "degrees": [
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Philosophy",
+   "degrees": [
+    "MA/PhD"
+   ]
+  },
+  {
+   "program": "Physics",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Plant & Soil Sciences",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Plant Biology",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Political Science",
+   "degrees": [
+    "4+1 Accelerated",
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Polymer Science and Engineering",
+   "degrees": [
+    "MS/PhD"
+   ]
+  },
+  {
+   "program": "Psychological and Brain Sciences",
+   "degrees": [
+    "PhD"
+   ]
+  },
+  {
+   "program": "Public Health",
+   "degrees": [
+    "Certificate",
+    "MPH + MPPA"
+   ]
+  },
+  {
+   "program": "Public Health: Global Health",
+   "degrees": [
+    "Certificate",
+    "MPH"
+   ]
+  },
+  {
+   "program": "Public Health: Public Health Practice",
+   "degrees": [
+    "MPH"
+   ]
+  },
+  {
+   "program": "Public Health: Worcester MPH",
+   "degrees": [
+    "MPH"
+   ]
+  },
+  {
+   "program": "Public Policy and Administration",
+   "degrees": [
+    "MPP",
+    "4+1 Accelerated",
+    "MPPA",
+    "MEd + MPPA",
+    "MPH + MPPA",
+    "MPPA + MBA",
+    "MPPA + MRP"
+   ]
+  },
+  {
+   "program": "Regional Planning",
+   "degrees": [
+    "4+1 Accelerated",
+    "MRP",
+    "MLA + MRP",
+    "MPPA + MRP",
+    "MSCE + MRP",
+    "MRP + JD",
+    "MRP + MS3",
+    "MRP + MS",
+    "MRP + MArch",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Resource Economics",
+   "degrees": []
+  },
+  {
+   "program": "School Psychology",
+   "degrees": [
+    "MEd + EdS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Sociology",
+   "degrees": [
+    "MA",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Speech, Language, and Hearing Sciences",
+   "degrees": [
+    "MA",
+    "PhD",
+    "AuD"
+   ]
+  },
+  {
+   "program": "Sport Management",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS"
+   ]
+  },
+  {
+   "program": "Statistics",
+   "degrees": [
+    "4+1 Accelerated",
+    "MS",
+    "PhD"
+   ]
+  },
+  {
+   "program": "Sustainability Science",
+   "degrees": [
+    "MS",
+    "MRP + MS3"
+   ]
+  },
+  {
+   "program": "Theater",
+   "degrees": []
+  }
+ ]
+}

@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PhD Fee Bridge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: slim top bar with three views (Sponsor board, Apply, Track); board is a column of applicant cards that expand to the statement, pledge hold and simulated checkout. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --ink: #18202e; --muted: #5b6577; --line: #dde1e8;
+  --accent: #2b4c9b; --accent-soft: #e6ecf8; --pledged: #a86a00; --pledged-soft: #fbf0d9;
+  --paid: #1d7a4e; --paid-soft: #e0f2e8; --danger: #b3261e; --scrim: rgba(16, 22, 34, .55);
+  --display: "Newsreader", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151c; --surface: #1a1f29; --ink: #e8ebf1; --muted: #9aa3b4; --line: #2c3340;
+  --accent: #8aa6ef; --accent-soft: #222c44; --pledged: #e3ad4f; --pledged-soft: #33290f;
+  --paid: #5fc893; --paid-soft: #15301f; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #1a1f29; --ink: #e8ebf1; --muted: #9aa3b4; --line: #2c3340;
+  --accent: #8aa6ef; --accent-soft: #222c44; --pledged: #e3ad4f; --pledged-soft: #33290f;
+  --paid: #5fc893; --paid-soft: #15301f; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); color-scheme: dark }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+[hidden] { display: none !important }
+.wrap { max-width: 860px; margin: 0 auto }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px; border-bottom: 1px solid var(--line) }
+.brand { font-family: var(--display); font-size: 24px; font-weight: 600; letter-spacing: -0.01em }
+.brand small { display: block; font-family: var(--body); font-size: 13px; font-weight: 400; color: var(--muted); letter-spacing: 0 }
+nav { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; flex-wrap: wrap }
+nav a { text-decoration: none; color: var(--muted); padding: 6px 14px; border-radius: 999px; font-weight: 500; font-size: 14px }
+nav a[aria-current="page"] { background: var(--accent); color: var(--surface) }
+.demo { margin-top: 16px; font-size: 13px; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between }
+.demo button { padding: 4px 10px; font-size: 13px }
+h1 { font-family: var(--display); font-weight: 500; font-size: 32px; line-height: 1.15; margin: 28px 0 6px; text-wrap: balance }
+h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 32px 0 10px }
+.lede { color: var(--muted); max-width: 62ch; margin: 0 0 20px }
+.stats { display: flex; flex-wrap: wrap; gap: 24px; margin: 0 0 20px; font-size: 13px; color: var(--muted) }
+.stats b { display: block; font-family: var(--mono); font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px }
+select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
+.filters select { width: auto; max-width: 100% }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; overflow: hidden }
+.card-btn { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; width: 100%; padding: 18px; cursor: pointer }
+.card-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px }
+.card-btn > div { min-width: 0 }
+.who { font-family: var(--display); font-size: 21px; font-weight: 600 }
+.meta { font-size: 13px; color: var(--muted) }
+.tag { display: inline-block; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 4px; margin-top: 6px }
+.excerpt { grid-column: 1 / -1; margin: 8px 0 0; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 65ch }
+.side { display: grid; justify-items: end; align-content: start; gap: 6px; text-align: right }
+.fee { font-family: var(--mono); font-size: 17px; font-variant-numeric: tabular-nums }
+.more { grid-column: 1 / -1; font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 6px }
+.detail { border-top: 1px solid var(--line); padding: 18px; display: grid; gap: 14px }
+.statement { margin: 0; max-width: 65ch; white-space: pre-line }
+.wc { font-size: 12px; color: var(--muted); font-family: var(--mono) }
+.wc.over { color: var(--danger); font-weight: 600 }
+.pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap }
+.pill.open { color: var(--accent); background: var(--accent-soft) }
+.pill.pledged { color: var(--pledged); background: var(--pledged-soft) }
+.pill.paid { color: var(--paid); background: var(--paid-soft) }
+.urgent { color: var(--pledged); font-weight: 600 }
+button { font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface) }
+button.ghost { background: transparent; color: var(--accent) }
+button:disabled { opacity: .5; cursor: not-allowed }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.panel { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px }
+.panel p { margin: 0 }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px }
+.kv dt { color: var(--muted) } .kv dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere }
+.timer { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--pledged); font-weight: 600 }
+.radio-row { display: flex; flex-wrap: wrap; gap: 8px 18px }
+.radio-row label { display: flex; gap: 6px; align-items: center; font-weight: 400 }
+.radio-row input { width: auto }
+.sponsor-line { font-size: 13px; color: var(--muted) }
+.history { font-size: 12px; color: var(--muted) }
+form.apply, .box { display: grid; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px }
+.field { display: grid; gap: 6px }
+.field label, .lbl { font-weight: 600; font-size: 14px }
+.label-row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
+.hint { font-size: 13px; color: var(--muted); font-weight: 400 }
+.err { font-size: 13px; color: var(--danger); margin: 0 }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px }
+.fixed { font-weight: 600; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-family: var(--mono) }
+.waivers { font-size: 13px; color: var(--muted); background: var(--bg); border-radius: 8px; padding: 10px 12px }
+.waivers ul { margin: 4px 0 0; padding-left: 18px }
+.appno { font-family: var(--mono); font-size: 26px; letter-spacing: .04em }
+.mono { font-family: var(--mono) }
+body.busy { cursor: progress }
+.codebox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px }
+.codebox summary { cursor: pointer; font-weight: 600; color: var(--accent) }
+#mine:not(:empty) { margin-bottom: 14px }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); z-index: 30 }
+.thanks { columns: 2 220px; gap: 24px; font-size: 14px }
+.thanks div { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line) }
+footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
+.scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; padding: 16px; z-index: 20 }
+.modal { background: var(--surface); border-radius: 14px; width: min(440px, 100%); max-height: calc(100% - 32px); overflow: auto; padding: 22px; display: grid; gap: 14px }
+.modal h3 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 0 }
+.methods { display: grid; gap: 8px }
+.method { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; font-weight: 600 }
+.method:hover, .method:focus-visible { border-color: var(--accent); outline: none }
+.method small { font-weight: 400; color: var(--muted); font-size: 12px }
+.sim { font-size: 12px; color: var(--pledged); background: var(--pledged-soft); border-radius: 6px; padding: 6px 10px }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; margin: 10px auto }
+@media (prefers-reduced-motion: no-preference) { .spinner { animation: spin .8s linear infinite } .card { transition: border-color .2s } .card:hover { border-color: var(--accent) } }
+@keyframes spin { to { transform: rotate(360deg) } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">PhD Fee Bridge<small>Sponsors cover UMass Amherst application fees for students from Africa</small></div>
+    <nav>
+      <a href="#board" id="nav-board">Sponsor board</a>
+      <a href="#apply" id="nav-apply">Apply</a>
+      <a href="#track" id="nav-track">Track my application</a>
+    </nav>
+  </header>
+  <div class="demo"><span id="mode-note"></span>
+    <span class="actions"><button class="ghost" id="skip">Skip ahead 6 hours</button><button class="ghost" id="reset">Reset demo</button></span></div>
+
+  <main id="view-board">
+    <h1>African applicants to UMass Amherst waiting on a fee</h1>
+    <p class="lede">Tap an applicant to read their research statement. Pledge to hold their fee for 24 hours and you'll get a pledge code. Pay with Pay now, or the pledge is released so someone else can step in.</p>
+    <details class="codebox" id="code-box"><summary>Already pledged? Enter your pledge code</summary>
+      <form id="code-form" novalidate class="grid2" style="margin-top:12px">
+        <div class="field"><label for="c-code">Pledge code</label><input id="c-code" placeholder="PL-XXXX"></div>
+        <div class="field"><label for="c-email">Your email</label><input id="c-email" type="email"></div>
+        <div class="actions"><button type="submit">Find my pledge</button><span class="hint">Demo tip: PL-H7KQ with lena@example.com</span></div>
+        <p class="err" id="c-err" hidden></p>
+      </form></details>
+    <div id="mine"></div>
+    <div class="stats" id="stats"></div>
+    <div class="filters">
+      <select id="f-field" aria-label="Filter by research area"><option value="">All research areas</option></select>
+      <select id="f-country" aria-label="Filter by country"><option value="">All countries</option></select>
+      <select id="f-status" aria-label="Filter by status"><option value="">Any status</option><option value="open">Needs a sponsor</option><option value="pledged">Pledged</option><option value="paid">Paid</option></select>
+    </div>
+    <div id="cards"></div>
+    <h2>Thank-you wall</h2>
+    <div class="thanks" id="thanks"></div>
+  </main>
+
+  <main id="view-apply" hidden>
+    <h1>Ask for help with your UMass Amherst application fee</h1>
+    <p class="lede">Open to students from any of the 54 African countries for now. Sponsors see your name, country, program and research statement. Your email and UMass applicant ID stay private and are shown only to the sponsor who pledges.</p>
+    <form class="apply" id="apply-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name"></div>
+        <div class="field"><label for="a-email">Email <span class="hint">(private)</span></label><input id="a-email" type="email" autocomplete="email"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="a-country">Country of origin</label><select id="a-country"><option value="">Choose your country</option></select><span class="hint">Open to students from African countries for now.</span></div>
+        <div class="field"><label for="a-field">Research area</label><input id="a-field" placeholder="e.g. Soft matter physics"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="a-program">Program</label><select id="a-program"><option value="">Choose a UMass Amherst program</option></select></div>
+        <div class="field"><label for="a-level">Degree</label><select id="a-level" disabled><option value="">Choose a program first</option></select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><span class="lbl">Application fee</span><div class="fixed">$90.00</div><span class="hint">UMass charges the same fee for every program.</span></div>
+        <div class="field"><label for="a-deadline">Program deadline</label><input id="a-deadline" type="date"></div>
+      </div>
+      <div class="field"><label for="a-umassid">UMass applicant ID <span class="hint">(private)</span></label><input id="a-umassid" placeholder="From your UMass application account">
+        <span class="hint">Lets the sponsor's payment be matched to your application.</span></div>
+      <div class="field">
+        <div class="label-row"><label for="a-statement">Your research statement</label><span class="wc" id="a-wc">0 / 150 words</span></div>
+        <textarea id="a-statement" rows="7" placeholder="What you want to research at UMass, why it matters to you, and what you've done so far."></textarea>
+        <span class="hint">Up to 150 words. Sponsors read this when they open your card.</span>
+      </div>
+      <div class="waivers"><b>Check for a fee waiver first.</b> UMass waives the fee for:
+        <ul><li>McNair Scholars</li><li>GRE fee reduction holders (within the past year)</li><li>Some current UMass and Five College students</li></ul></div>
+      <div class="field"><span class="lbl">Fee waiver</span>
+        <div class="radio-row" style="flex-direction:column;gap:6px">
+          <label><input type="radio" name="a-waiver" id="a-waiver-none" value="Doesn't qualify for a waiver"> I've checked, and I don't qualify for a waiver</label>
+          <label><input type="radio" name="a-waiver" id="a-waiver-denied" value="Waiver request was declined"> I applied for a waiver and it was declined</label>
+        </div></div>
+      <div><button type="submit">Submit application</button></div>
+      <p class="err" id="form-error" hidden></p>
+    </form>
+    <div class="box" id="apply-done" hidden>
+      <p style="margin:0">Your application is on the sponsor board. Your application number is:</p>
+      <div class="appno" id="done-no"></div>
+      <p class="hint" style="margin:0">Keep this private. Use it with your email to track your application, and it appears on the sponsor's payment receipt.</p>
+      <div class="actions"><a href="#track"><button type="button" id="done-track">Track my application</button></a><button class="ghost" type="button" id="done-again">Submit another</button></div>
+    </div>
+  </main>
+
+  <main id="view-track" hidden>
+    <h1>Track my application</h1>
+    <p class="lede">Enter the application number you got when you applied, and your email.</p>
+    <form class="box" id="track-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="t-no">Application number</label><input id="t-no" placeholder="FB-26-0000"></div>
+        <div class="field"><label for="t-email">Email</label><input id="t-email" type="email"></div>
+      </div>
+      <div class="actions"><button type="submit">Look up</button><span class="hint">Demo tip: try FB-26-4127 with amina@example.com</span></div>
+      <p class="err" id="track-error" hidden></p>
+    </form>
+    <div id="track-result"></div>
+  </main>
+  <footer>Independent community project. Not affiliated with or endorsed by UMass Amherst.</footer>
+</div>
+<div class="scrim" id="scrim" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" id="modal"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script>
+const PROGRAMS = [["Accounting",["PhD"]],["Afro-American Studies",["PhD"]],["Animal Biotechnology & Biomedical Sciences",["PhD"]],["Anthropology",["PhD"]],["Astronomy",["PhD"]],["Biomedical Engineering",["PhD"]],["Biostatistics: Public Health",["PhD"]],["Chemical Engineering",["PhD"]],["Chemistry",["PhD"]],["Civil Engineering",["PhD"]],["Communication",["PhD"]],["Community Health Education: Public Health",["PhD"]],["Comparative Literature",["PhD"]],["Computer Science",["PhD"]],["Earth, Geographic, and Climate Sciences",["PhD"]],["Economics",["PhD"]],["Education",["PhD"]],["Electrical and Computer Engineering",["PhD"]],["English",["PhD"]],["Environmental Conservation",["PhD"]],["Environmental Engineering",["PhD"]],["Environmental Health Sciences: Public Health",["PhD"]],["Epidemiology: Public Health",["PhD"]],["Food Science",["PhD"]],["German and Scandinavian Studies",["PhD"]],["Health Policy and Management: Public Health",["PhD"]],["Hispanic Literatures and Linguistics",["PhD"]],["History",["PhD"]],["Industrial Engineering and Operations Research",["PhD"]],["Kinesiology",["PhD"]],["Linguistics",["PhD"]],["Management: Doctoral Program",["PhD"]],["Materials Science and Engineering",["PhD"]],["Mathematics",["PhD"]],["Mechanical Engineering",["PhD"]],["Microbiology",["PhD"]],["Molecular & Cellular Biology",["PhD"]],["Music",["PhD"]],["Neuroscience & Behavior",["PhD"]],["Nursing",["PhD"]],["Nutrition: Public Health",["PhD"]],["Organismic & Evolutionary Biology",["PhD"]],["Philosophy",["MA/PhD"]],["Physics",["PhD"]],["Plant & Soil Sciences",["PhD"]],["Plant Biology",["PhD"]],["Political Science",["PhD"]],["Polymer Science and Engineering",["MS/PhD"]],["Psychological and Brain Sciences",["PhD"]],["Regional Planning",["PhD"]],["School Psychology",["PhD"]],["Sociology",["PhD"]],["Speech, Language, and Hearing Sciences",["PhD"]],["Statistics",["PhD"]]];
+/* ===== Shared rules: the same code runs in Google Apps Script (Sheet mode) and in the browser (preview mode). ===== */
+var HOLD_MS = 24 * 3600e3;
+var COLS = ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement",
+  "status", "pledgeCode", "sponsorName", "sponsorEmail", "sponsorAnon", "pledgedAt", "payMethod", "payRef", "paidAt", "releases"];
+/* For now the program is open to applicants from the 54 African countries. */
+var COUNTRIES = ["Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Republic of the Congo", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "The Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"];
+var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function rnd(n) { var s = ""; for (var i = 0; i < n; i++) s += ALPH[Math.floor(Math.random() * ALPH.length)]; return s; }
+function wordCount(t) { return (String(t || "").trim().match(/\S+/g) || []).length; }
+function lc(s) { return String(s || "").trim().toLowerCase(); }
+function fail(m) { throw new Error(m); }
+function isAnon(o) { return String(o.sponsorAnon) === "true"; }
+
+/* What anyone can see. Email, UMass applicant ID, application number and pledge code never leave through here. */
+function pub(o) {
+  return { id: o.id, name: o.name, country: o.country, field: o.field, program: o.program, level: o.level, deadline: o.deadline,
+    waiver: o.waiver, statement: o.statement, status: o.status,
+    sponsor: o.status === "open" || isAnon(o) ? "" : o.sponsorName, sponsorAnon: o.status !== "open" && isAnon(o),
+    pledgedAt: Number(o.pledgedAt) || 0, releases: Number(o.releases) || 0, payRef: o.status === "paid" ? o.payRef : "" };
+}
+function sponsorView(o) { var v = pub(o); v.appNo = o.appNo; v.umassId = o.umassId; v.code = o.pledgeCode; v.payMethod = o.payMethod || ""; return v; }
+function clearPledge(o) {
+  o.status = "open"; o.pledgeCode = ""; o.sponsorName = ""; o.sponsorEmail = ""; o.sponsorAnon = ""; o.pledgedAt = "";
+  o.releases = (Number(o.releases) || 0) + 1;
+}
+function expireHolds(db) {
+  var t = db.now();
+  db.all().forEach(function (o) {
+    if (o.status === "pledged" && t - Number(o.pledgedAt) >= HOLD_MS) { db.log(o.appNo, "auto-released after 24h", o.pledgeCode); clearPledge(o); db.save(o); }
+  });
+}
+
+function handle(req, db) {
+  expireHolds(db);
+  var rs = db.all(), a = req.action;
+  function byCode() {
+    var code = String(req.code || "").trim().toUpperCase();
+    var o = rs.filter(function (r) { return r.pledgeCode && r.pledgeCode === code && lc(r.sponsorEmail) === lc(req.email); })[0];
+    if (!o) fail("No pledge matches that code and email. Unpaid pledges are released after 24 hours.");
+    return o;
+  }
+  if (a === "list") return { students: rs.map(pub), now: db.now() };
+
+  if (a === "apply") {
+    var d = req.data || {}, keys = ["name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement"];
+    keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
+    if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
+    if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("For now, applications are open to students from African countries.");
+    if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
+    var max = rs.reduce(function (m, r) { return Math.max(m, Number(String(r.appNo).split("-")[2]) || 0); }, 4299);
+    var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: db.now(), status: "open", releases: 0 };
+    keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
+    db.add(o); db.log(o.appNo, "applied", "");
+    return { appNo: o.appNo };
+  }
+  if (a === "pledge") {
+    var p = rs.filter(function (r) { return r.id === req.id; })[0];
+    if (!p) fail("That applicant is no longer listed.");
+    if (p.status !== "open") fail("Someone else has just pledged for this applicant.");
+    if (String(req.email || "").indexOf("@") < 0) fail("Add your email so we can send your receipt.");
+    var anon = !!req.anon;
+    if (!anon && !String(req.name || "").trim()) fail("Add your name, or choose to stay anonymous.");
+    if (rs.some(function (r) { return r.status === "pledged" && lc(r.sponsorEmail) === lc(req.email); })) fail("You already have a pledge on hold. Pay or release it first.");
+    p.status = "pledged"; p.pledgeCode = "PL-" + rnd(4); p.sponsorName = String(req.name || "").trim().slice(0, 120);
+    p.sponsorEmail = String(req.email).trim(); p.sponsorAnon = String(anon); p.pledgedAt = db.now();
+    db.save(p); db.log(p.appNo, "pledged", p.pledgeCode);
+    return sponsorView(p);
+  }
+  if (a === "sponsor") return sponsorView(byCode());
+  if (a === "pay") {
+    var q = byCode();
+    if (q.status === "pledged") {
+      q.status = "paid"; q.payMethod = String(req.method || "Credit card").slice(0, 40); q.payRef = "SIM-" + rnd(6); q.paidAt = db.now();
+      db.save(q); db.log(q.appNo, "paid (simulated)", q.payRef + " " + q.payMethod);
+    }
+    return sponsorView(q);
+  }
+  if (a === "release") {
+    var r = byCode();
+    if (r.status !== "pledged") fail("This pledge is already paid.");
+    db.log(r.appNo, "released by sponsor", r.pledgeCode); clearPledge(r); db.save(r);
+    return {};
+  }
+  if (a === "track") {
+    var no = String(req.appNo || "").trim().toUpperCase();
+    var t = rs.filter(function (x) { return x.appNo === no && lc(x.email) === lc(req.email); })[0];
+    if (!t) fail("No application matches that number and email.");
+    var v = pub(t); v.appNo = t.appNo; v.payMethod = t.status === "paid" ? t.payMethod : "";
+    return v;
+  }
+  fail("Unknown action.");
+}
+
+/* Fictional example applicants. */
+function seedRows(now) {
+  var H = 3600e3;
+  function row(o) { var r = {}; COLS.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
+  return [
+    row({ id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
+      statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." }),
+    row({ id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver",
+      status: "pledged", pledgeCode: "PL-H7KQ", sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", pledgedAt: now - 17 * H, releases: 1,
+      statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." }),
+    row({ id: "kwame001", appNo: "FB-26-4102", createdAt: now - 120 * H, name: "Kwame Mensah", email: "kwame@example.com", umassId: "UMA-117950", country: "Ghana", field: "Machine learning", program: "Computer Science", level: "PhD", deadline: "2026-12-15", waiver: "Doesn't qualify for a waiver",
+      status: "paid", pledgeCode: "PL-R2MX", sponsorName: "", sponsorEmail: "anon@example.com", sponsorAnon: "true", pledgedAt: now - 50 * H, payMethod: "Credit card", payRef: "SIM-7F3K2Q", paidAt: now - 49 * H, releases: 0,
+      statement: "Speech recognition works well in English and poorly in Twi, Ewe, Ga and most other Ghanaian languages. I want to build models that learn from small amounts of recorded speech, so a language with a few hundred hours of audio can still get a usable system.\n\nAt my current job in Accra I helped collect a Twi speech dataset with a nonprofit, and saw that good data mattered more than model size. At UMass I'd like to work on self-supervised learning and careful dataset design for low-resource languages, and release open models for health hotlines and farm advisory services." }),
+    row({ id: "fatou001", appNo: "FB-26-4140", createdAt: now - 70 * H, name: "Fatou Diallo", email: "fatou@example.com", umassId: "UMA-118512", country: "Senegal", field: "Public health", program: "Community Health Education: Public Health", level: "PhD", deadline: "2026-11-15", waiver: "Waiver request was declined", status: "open", releases: 0,
+      statement: "In rural Senegal, many women give birth without a skilled attendant because the nearest clinic is hours away. I worked for two years as a field coordinator for a maternal health program in the Kolda region, tracking which women reached care and which did not.\n\nAt UMass I want to study how travel time, cost and trust in clinics combine to keep women from care, and design interventions the regional health authority can afford.\n\nI'm the first in my family to apply to a PhD." }),
+    row({ id: "tendai01", appNo: "FB-26-4144", createdAt: now - 60 * H, name: "Tendai Moyo", email: "tendai@example.com", umassId: "UMA-118640", country: "Zimbabwe", field: "Polymer science", program: "Polymer Science and Engineering", level: "MS/PhD", deadline: "2026-12-05", waiver: "Doesn't qualify for a waiver",
+      status: "pledged", pledgeCode: "PL-9TWB", sponsorName: "", sponsorEmail: "kim@example.com", sponsorAnon: "true", pledgedAt: now - 22.5 * H, releases: 0,
+      statement: "I want to design polymer binders that make sodium-ion batteries last longer. Sodium is cheap and plentiful, which could make grid storage affordable in countries like Zimbabwe, where power cuts are a daily problem, but the electrodes crack and fade quickly.\n\nIn my undergraduate thesis at the University of Zimbabwe I tested three water-based binders and saw one roughly double the cycle life. UMass Amherst's polymer science program is where I most want to take this further.\n\nAfter the PhD I want to help build battery research capacity back home." }),
+  ];
+}
+
+/* ===== Website ===== */
+var API_URL = (window.FEE_BRIDGE_API || "").trim();
+var REMOTE = !!API_URL;
+var FEE = 90, KEY = "feebridge-v3";
+const $ = id => document.getElementById(id);
+const fmt = n => "$" + Number(n).toFixed(2);
+const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const first = n => String(n).split(" ")[0];
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+function store(k, v) { try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+function recall(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+
+/* Preview mode keeps its data in this browser and runs the same rules as the Sheet. */
+let L = recall(KEY + "-data");
+function resetLocal() { L = { offset: 0, rows: seedRows(Date.now()), log: [] }; store(KEY + "-data", L); }
+if (!REMOTE && !L) resetLocal();
+const localDb = {
+  all: () => L.rows, now: () => Date.now() + L.offset,
+  save: () => store(KEY + "-data", L), add: o => { L.rows.push(o); store(KEY + "-data", L); },
+  log: (no, ev, d) => { L.log.push([Date.now() + L.offset, no, ev, d]); store(KEY + "-data", L); }
+};
+let skew = 0;
+const clock = () => REMOTE ? Date.now() + skew : Date.now() + L.offset;
+
+async function call(req) {
+  if (!REMOTE) return JSON.parse(JSON.stringify(handle(req, localDb)));
+  let r;
+  try { r = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(req) }); }
+  catch { throw new Error("Couldn't reach the server. Check your connection and try again."); }
+  const j = await r.json().catch(() => ({ ok: false, error: "The server sent back something unexpected." }));
+  if (!j.ok) throw new Error(j.error || "Something went wrong.");
+  return j;
+}
+
+let students = [], loaded = false, loadError = "";
+let my = recall(KEY + "-pledge");      // { code, email } for this sponsor
+let myView = null;                     // full sponsor view of that pledge
+let expanded = null, pledgeFormFor = null, busy = false, track = null;
+
+async function refresh() {
+  try {
+    const r = await call({ action: "list" });
+    students = r.students; if (REMOTE) skew = r.now - Date.now(); loaded = true; loadError = "";
+    if (my) {
+      try { myView = await call({ action: "sponsor", code: my.code, email: my.email }); }
+      catch { myView = null; my = null; store(KEY + "-pledge"); }
+    }
+  } catch (e) { loadError = e.message; }
+  fillFilters(); renderBoard();
+  if (track && !$("view-track").hidden) lookupTrack(track.appNo, track.email, true);
+}
+
+function remaining(at) {
+  const ms = Math.max(0, at + 24 * 3600e3 - clock()), h = Math.floor(ms / 3600e3), m = Math.floor(ms % 3600e3 / 60e3);
+  return `${h}h ${String(m).padStart(2, "0")}m`;
+}
+const daysLeft = d => Math.ceil((new Date(d + "T23:59:59") - clock()) / 864e5);
+const who = s => s.sponsorAnon ? "an anonymous sponsor" : s.sponsor;
+const pill = s => s.status === "open" ? `<span class="pill open">Needs a sponsor</span>` : s.status === "pledged" ? `<span class="pill pledged">Pledged</span>` : `<span class="pill paid">Paid</span>`;
+
+function fillFilters() {
+  for (const [id, key] of [["f-field", "field"], ["f-country", "country"]]) {
+    const sel = $(id), cur = sel.value, vals = [...new Set(students.map(s => s[key]))].sort();
+    sel.length = 1; vals.forEach(v => sel.add(new Option(v, v))); sel.value = cur;
+  }
+}
+
+function renderBoard() {
+  if (!loaded) { $("cards").innerHTML = `<p class="lede">${loadError ? esc(loadError) : "Loading applicants…"}</p>`; $("stats").innerHTML = ""; return; }
+  const open = students.filter(s => s.status === "open");
+  $("stats").innerHTML = `
+    <div><b>${open.length}</b>fees need a sponsor</div>
+    <div><b>${fmt(open.length * FEE)}</b>still needed</div>
+    <div><b>${students.filter(s => s.status === "pledged").length}</b>on a 24-hour hold</div>
+    <div><b>${students.filter(s => s.status === "paid").length}</b>paid</div>`;
+  $("mine").innerHTML = myView && myView.status === "pledged"
+    ? `<div class="panel"><p>You're holding <b>${esc(first(myView.name))}</b>'s fee. Pledge code <b class="mono">${esc(myView.code)}</b>, <span class="timer">${remaining(myView.pledgedAt)}</span> left.</p>
+       <div class="actions"><button data-act="pay">Pay now</button><button class="ghost" data-act="release">Release pledge</button><button class="ghost" data-act="forget">Not me</button></div></div>` : "";
+  const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value;
+  const list = students.filter(s => (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
+    .sort((a, b) => (a.status === "paid") - (b.status === "paid") || new Date(a.deadline) - new Date(b.deadline));
+  $("cards").innerHTML = list.length ? list.map(card).join("") : `<p class="lede">${students.length ? "No applicants match these filters." : "No applications yet. Once someone applies, they'll appear here."}</p>`;
+  const paid = students.filter(s => s.status === "paid");
+  $("thanks").innerHTML = paid.length ? paid.map(s => `<div><b>${esc(s.sponsorAnon ? "An anonymous sponsor" : s.sponsor)}</b> covered ${esc(first(s.name))}'s fee for ${esc(s.program)}</div>`).join("") : `<p class="hint">Paid fees will be listed here.</p>`;
+}
+
+function card(s) {
+  const d = daysLeft(s.deadline), isOpen = expanded === s.id, mineHere = myView && myView.id === s.id;
+  const due = d < 0 ? "Deadline passed" : d <= 14 ? `<span class="urgent">Due in ${d} day${d === 1 ? "" : "s"}</span>` : `Due ${new Date(s.deadline + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+  let body = "";
+  if (isOpen) {
+    let action = "";
+    if (s.status === "open" && pledgeFormFor !== s.id) action = `<div class="actions"><button data-act="pledge" data-id="${s.id}">Pledge to cover ${fmt(FEE)}</button><span class="hint">Holds this fee for you for 24 hours</span></div>`;
+    else if (s.status === "open") action = `
+      <div class="panel">
+        <div class="grid2">
+          <div class="field"><label for="p-name">Your name</label><input id="p-name" placeholder="e.g. Sam Mwangi" autocomplete="name"></div>
+          <div class="field"><label for="p-email">Your email <span class="hint">(private)</span></label><input id="p-email" type="email" autocomplete="email"></div>
+        </div>
+        <div class="radio-row"><label><input type="radio" name="p-anon" id="p-anon-no" checked> Show my name</label><label><input type="radio" name="p-anon" id="p-anon-yes"> Stay anonymous</label></div>
+        <p class="hint">You'll get a pledge code and have 24 hours to pay ${fmt(FEE)}. If you don't, the pledge is released and ${esc(first(s.name))} goes back on the board. You can hold one pledge at a time.</p>
+        <p class="err" id="p-err" hidden></p>
+        <div class="actions"><button data-act="confirm" data-id="${s.id}">Confirm pledge</button><button class="ghost" data-act="cancel">Cancel</button></div>
+      </div>`;
+    else if (s.status === "pledged" && mineHere) action = `
+      <div class="panel">
+        <p>Your pledge code is <b class="mono">${esc(myView.code)}</b>. Save it with your email to come back later. Your hold expires in <span class="timer">${remaining(myView.pledgedAt)}</span>.</p>
+        <dl class="kv"><dt>Application no.</dt><dd>${esc(myView.appNo)}</dd><dt>UMass applicant ID</dt><dd>${esc(myView.umassId)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
+        <div class="actions"><button data-act="pay">Pay now</button><button class="ghost" data-act="release">Release pledge</button></div>
+      </div>`;
+    else if (s.status === "pledged") action = `<div class="sponsor-line">Held by ${esc(who(s))} for another <span class="timer">${remaining(s.pledgedAt)}</span>. If they don't pay, it opens up again.</div>`;
+    else action = `<div class="sponsor-line">Paid by ${esc(who(s))} · receipt ${esc(s.payRef)}</div>`;
+    const hist = s.releases ? `<div class="history">${s.releases} earlier pledge${s.releases > 1 ? "s" : ""} released without payment</div>` : "";
+    body = `<div class="detail" id="detail-${s.id}"><p class="statement">${esc(s.statement)}</p><span class="wc">${(s.statement.match(/\S+/g) || []).length} words${s.waiver ? " · " + esc(s.waiver) : ""}</span>${action}${hist}</div>`;
+  }
+  return `<article class="card">
+    <button class="card-btn" data-act="toggle" data-id="${s.id}" aria-expanded="${isOpen}" aria-controls="detail-${s.id}">
+      <div><div class="who">${esc(s.name)}</div>
+        <div class="meta">From ${esc(s.country)} · ${esc(s.level)}, ${esc(s.program)} · ${due}</div>
+        <span class="tag">${esc(s.field)}</span></div>
+      <div class="side"><span class="fee">${fmt(FEE)}</span>${pill(s)}</div>
+      ${isOpen ? "" : `<p class="excerpt">${esc(s.statement)}</p><span class="more">Read full statement</span>`}
+    </button>${body}</article>`;
+}
+
+async function act(fn) { if (busy) return; busy = true; document.body.classList.add("busy"); try { await fn(); } catch (e) { toast(e.message); } finally { busy = false; document.body.classList.remove("busy"); } }
+
+document.querySelector("#view-board").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  if (a === "toggle") { expanded = expanded === id ? null : id; pledgeFormFor = null; return renderBoard(); }
+  if (a === "pledge") { pledgeFormFor = id; renderBoard(); return $("p-name").focus(); }
+  if (a === "cancel") { pledgeFormFor = null; return renderBoard(); }
+  if (a === "forget") { my = null; myView = null; store(KEY + "-pledge"); return renderBoard(); }
+  if (a === "pay") return openCheckout();
+  if (a === "confirm") return act(async () => {
+    const name = $("p-name").value.trim(), email = $("p-email").value.trim(), anon = $("p-anon-yes").checked;
+    try { myView = await call({ action: "pledge", id, name, email, anon }); }
+    catch (err) { const p = $("p-err"); p.textContent = err.message; p.hidden = false; return; }
+    my = { code: myView.code, email }; store(KEY + "-pledge", my); pledgeFormFor = null; expanded = id;
+    toast(`Pledged. Your code is ${myView.code}. You have 24 hours to pay.`);
+    await refresh();
+  });
+  if (a === "release") return act(async () => {
+    await call({ action: "release", code: my.code, email: my.email });
+    my = null; myView = null; store(KEY + "-pledge"); toast("Pledge released. The fee is open again."); await refresh();
+  });
+});
+["f-field", "f-country", "f-status"].forEach(id => $(id).addEventListener("change", renderBoard));
+
+$("code-form").addEventListener("submit", e => {
+  e.preventDefault();
+  act(async () => {
+    const code = $("c-code").value.trim().toUpperCase(), email = $("c-email").value.trim();
+    try { myView = await call({ action: "sponsor", code, email }); }
+    catch (err) { const p = $("c-err"); p.textContent = err.message; p.hidden = false; return; }
+    $("c-err").hidden = true; my = { code, email }; store(KEY + "-pledge", my); expanded = myView.id;
+    $("code-box").open = false; await refresh();
+    if (myView && myView.status === "paid") toast(`This pledge is already paid. Receipt ${myView.payRef}.`);
+  });
+});
+
+/* Simulated checkout */
+let co = null;
+function openCheckout() { if (!myView) return; co = { step: "method" }; $("scrim").hidden = false; drawCheckout(); }
+function closeCheckout() { $("scrim").hidden = true; co = null; refresh(); }
+function drawCheckout() {
+  const m = $("modal"), s = myView;
+  const head = `<div class="label-row"><h3 id="m-title">${co.step === "done" ? "Payment complete" : "Pay UMass Amherst application fee"}</h3><button class="ghost" data-m="close" aria-label="Close" style="padding:2px 10px">×</button></div>`;
+  if (co.step === "method") m.innerHTML = `${head}
+    <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(s.appNo)}</dd><dt>Program</dt><dd>${esc(s.level)}, ${esc(s.program)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
+    <div class="methods">
+      <button class="method" data-m="card" data-v="Credit card">Credit card <small>Accepted by UMass</small></button>
+      <button class="method" data-m="card" data-v="Debit card">Debit card <small>Card network</small></button>
+      <button class="method" data-m="wallet" data-v="PayPal">PayPal <small>Simulated</small></button>
+      <button class="method" data-m="wallet" data-v="Venmo">Venmo <small>Simulated</small></button>
+    </div>
+    <p class="sim">Simulation. UMass's own portal takes credit cards only. No card details are stored and nothing is charged.</p>`;
+  else if (co.step === "card") m.innerHTML = `${head}
+    <div class="field"><label for="k-num">Card number</label><input id="k-num" inputmode="numeric" value="4242 4242 4242 4242"></div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr"><div class="field"><label for="k-exp">Expiry</label><input id="k-exp" value="12/29"></div><div class="field"><label for="k-cvc">CVC</label><input id="k-cvc" value="123"></div></div>
+    <p class="sim">Test card filled in. Don't enter a real card. Nothing you type here is sent anywhere.</p>
+    <div class="actions"><button data-m="submit">Pay ${fmt(FEE)}</button><button class="ghost" data-m="back">Back</button></div>`;
+  else if (co.step === "wallet") m.innerHTML = `${head}
+    <p style="margin:0">You'd now be sent to ${esc(co.method)} to approve ${fmt(FEE)}.</p>
+    <p class="sim">Simulated. In the demo, approving completes the payment straight away.</p>
+    <div class="actions"><button data-m="submit">Approve in ${esc(co.method)}</button><button class="ghost" data-m="back">Back</button></div>`;
+  else if (co.step === "processing") m.innerHTML = `${head}<div class="spinner" role="status" aria-label="Processing"></div><p class="hint" style="text-align:center;margin:0">Processing payment…</p>`;
+  else m.innerHTML = `${head}
+    <p style="margin:0">${esc(first(s.name))}'s fee is marked as paid. Save this receipt.</p>
+    <dl class="kv"><dt>Receipt</dt><dd>${esc(s.payRef)}</dd><dt>Application no.</dt><dd>${esc(s.appNo)}</dd><dt>UMass applicant ID</dt><dd>${esc(s.umassId)}</dd><dt>Method</dt><dd>${esc(s.payMethod)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
+    <div class="actions"><button data-m="close">Done</button></div>`;
+  m.querySelector("button")?.focus();
+}
+$("modal").addEventListener("click", async e => {
+  const b = e.target.closest("[data-m]"); if (!b || co.step === "processing") return; const a = b.dataset.m;
+  if (a === "close") return closeCheckout();
+  if (a === "back") co.step = "method";
+  if (a === "card" || a === "wallet") { co.step = a; co.method = b.dataset.v; }
+  if (a === "submit") {
+    co.step = "processing"; drawCheckout();
+    const started = Date.now();
+    try { myView = await call({ action: "pay", code: my.code, email: my.email, method: co.method }); }
+    catch (err) { co.step = "method"; drawCheckout(); return toast(err.message); }
+    await new Promise(r => setTimeout(r, Math.max(0, 1200 - (Date.now() - started))));
+    my = null; store(KEY + "-pledge"); co.step = "done";
+  }
+  drawCheckout();
+});
+$("scrim").addEventListener("click", e => { if (e.target === $("scrim") && co && co.step !== "processing") closeCheckout(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && co && co.step !== "processing") closeCheckout(); });
+
+/* Apply */
+PROGRAMS.forEach(([n]) => $("a-program").add(new Option(n, n)));
+COUNTRIES.forEach(c => $("a-country").add(new Option(c, c)));
+$("a-program").addEventListener("change", () => {
+  const p = PROGRAMS.find(([n]) => n === $("a-program").value), sel = $("a-level");
+  sel.length = 0;
+  if (!p) { sel.add(new Option("Choose a program first", "")); sel.disabled = true; return; }
+  p[1].forEach(l => sel.add(new Option(l, l))); sel.disabled = false;
+});
+$("a-statement").addEventListener("input", () => {
+  const n = wordCount($("a-statement").value), wc = $("a-wc"); wc.textContent = `${n} / 150 words`; wc.classList.toggle("over", n > 150);
+});
+$("apply-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = id => $(id).value.trim(), err = $("form-error");
+  const fail = (m, id) => { err.hidden = false; err.textContent = m; if (id) $(id).focus(); };
+  const req = [["a-name", "your name"], ["a-email", "your email"], ["a-country", "your country"], ["a-field", "your research area"], ["a-program", "a program"], ["a-deadline", "the deadline"], ["a-umassid", "your UMass applicant ID"], ["a-statement", "your statement"]];
+  const miss = req.find(([id]) => !v(id)); if (miss) return fail(`Add ${miss[1]} before submitting.`, miss[0]);
+  if (!v("a-email").includes("@")) return fail("Check your email address.", "a-email");
+  if (wordCount(v("a-statement")) > 150) return fail(`Your statement is ${wordCount(v("a-statement"))} words. Trim it to 150 or fewer.`, "a-statement");
+  const wv = document.querySelector('input[name="a-waiver"]:checked');
+  if (!wv) return fail("Tell us about the fee waiver: either you don't qualify, or your request was declined.", "a-waiver-none");
+  err.hidden = true;
+  act(async () => {
+    const data = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value };
+    let r; try { r = await call({ action: "apply", data }); } catch (er) { return fail(er.message); }
+    $("done-no").textContent = r.appNo; $("apply-form").hidden = true; $("apply-done").hidden = false;
+    $("t-no").value = r.appNo; $("t-email").value = data.email;
+    e.target.reset(); $("a-wc").textContent = "0 / 150 words"; $("a-program").dispatchEvent(new Event("change"));
+    refresh();
+  });
+});
+$("done-again").addEventListener("click", () => { $("apply-form").hidden = false; $("apply-done").hidden = true; });
+
+/* Track */
+async function lookupTrack(appNo, email, quiet) {
+  let s; const err = $("track-error");
+  try { s = await call({ action: "track", appNo, email }); }
+  catch (e) { if (!quiet) { err.textContent = e.message; err.hidden = false; $("track-result").innerHTML = ""; } return; }
+  err.hidden = true; track = { appNo, email };
+  const steps = [["Submitted", true], ["Pledged by a sponsor", s.status !== "open"], ["Fee paid to UMass", s.status === "paid"]];
+  const status = s.status === "open" ? "Waiting for a sponsor." : s.status === "pledged" ? `${esc(s.sponsorAnon ? "An anonymous sponsor" : s.sponsor)} pledged. They have <span class="timer">${remaining(s.pledgedAt)}</span> left to pay.` : `Paid by ${esc(s.sponsorAnon ? "an anonymous sponsor" : s.sponsor)} by ${esc(String(s.payMethod).toLowerCase())}. Receipt ${esc(s.payRef)}.`;
+  $("track-result").innerHTML = `<div class="box" style="margin-top:14px">
+    <div class="label-row"><div class="who">${esc(s.name)}</div>${pill(s)}</div>
+    <p style="margin:0">${status}</p>
+    <dl class="kv">${steps.map(([l, ok]) => `<dt>${ok ? "Done" : "Pending"}</dt><dd style="font-family:var(--body)">${l}</dd>`).join("")}</dl>
+    ${s.releases ? `<p class="hint" style="margin:0">${s.releases} earlier pledge${s.releases > 1 ? "s were" : " was"} released without payment.</p>` : ""}
+  </div>`;
+}
+$("track-form").addEventListener("submit", e => { e.preventDefault(); act(() => lookupTrack($("t-no").value, $("t-email").value)); });
+
+/* Mode and demo controls */
+$("mode-note").textContent = REMOTE
+  ? "Demo. Applications are saved to the organiser's Google Sheet. Payments are simulated and nothing is charged."
+  : "Preview mode. Data stays in this browser, applicants are fictional, and payments are simulated.";
+$("skip").hidden = $("reset").hidden = REMOTE;
+$("skip").addEventListener("click", () => { L.offset += 6 * 3600e3; store(KEY + "-data", L); refresh(); toast("Moved ahead 6 hours. Any pledge past 24 hours is released."); });
+$("reset").addEventListener("click", () => { resetLocal(); my = null; myView = null; store(KEY + "-pledge"); expanded = null; track = null; $("track-result").innerHTML = ""; refresh(); toast("Demo reset."); });
+
+function route() {
+  const v = ["#apply", "#track"].includes(location.hash) ? location.hash.slice(1) : "board";
+  for (const n of ["board", "apply", "track"]) { $("view-" + n).hidden = n !== v; $("nav-" + n).removeAttribute("aria-current"); }
+  $("nav-" + v).setAttribute("aria-current", "page");
+  if (v === "board") renderBoard();
+}
+window.addEventListener("hashchange", route);
+setInterval(() => { if (!co && !busy && !pledgeFormFor) refresh(); }, REMOTE ? 60e3 : 30e3);
+route(); refresh();
+</script>
+
+</body>
+</html>
