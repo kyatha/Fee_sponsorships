@@ -47,6 +47,12 @@ h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 32p
 .stats b { display: block; font-family: var(--display); font-weight: 600; font-size: clamp(36px, 5vw, 48px); line-height: 1; margin-bottom: 6px; color: var(--ink); font-variant-numeric: tabular-nums }
 @media (max-width: 760px) { .stats .s-promised { grid-column: 1 / -1 } }
 .stats .s-need b { color: var(--accent) } .stats .s-paid b { color: var(--paid) } .stats .s-pool b, .stats .s-promised b { color: var(--pledged) }
+.billing { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 2px; margin: 0 0 12px } .billing legend { font-size: 14px; color: var(--muted); padding: 0 4px }
+.method.umass { width: 100%; text-align: left; flex-direction: column; align-items: flex-start; gap: 4px; border-color: var(--accent, #2a4a9a); margin-bottom: 4px }
+.btn-link { display: block; text-align: center; padding: 10px 14px; border-radius: 8px; background: var(--accent, #2a4a9a); color: var(--surface); font-weight: 600; text-decoration: none; margin: 12px 0 }
+.disclaimer { border: 1px solid var(--line); border-left: 4px solid var(--pledged); background: var(--pledged-soft); border-radius: 10px; padding: 12px 14px }
+.disclaimer label { display: flex; gap: 8px; align-items: center; font-weight: 600 }
+.disclaimer input { width: auto }
 .filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px }
 @media (max-width: 640px) { .filters { grid-template-columns: 1fr 1fr } }
 select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
@@ -218,6 +224,8 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
       </div>
       <div class="field"><label for="a-umassid">UMass applicant ID <span class="hint">(private)</span></label><input id="a-umassid" placeholder="From your UMass application account">
         <span class="hint">Lets the sponsor's payment be matched to your application.</span></div>
+      <div class="field"><label for="a-paylink">UMass payment link <span class="hint">(optional, private)</span></label><input id="a-paylink" type="url" placeholder="https://applygrad.umass.edu/...">
+        <span class="hint">If your UMass application portal gives you a link someone else can use to pay your fee, paste it here. Only a sponsor covering your full fee sees it, and it opens UMass's own card payment page. You can add it later in Track my application.</span></div>
       <div class="field">
         <div class="label-row"><label for="a-statement">Your research statement</label><span class="wc" id="a-wc">0 / 150 words</span></div>
         <textarea id="a-statement" rows="7" placeholder="What you want to research at UMass, why it matters to you, and what you've done so far."></textarea>
@@ -230,6 +238,8 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
           <label><input type="radio" name="a-waiver" id="a-waiver-none" value="Doesn't qualify for a waiver"> I've checked, and I don't qualify for a waiver</label>
           <label><input type="radio" name="a-waiver" id="a-waiver-denied" value="Waiver request was declined"> I applied for a waiver and it was declined</label>
         </div></div>
+      <div class="disclaimer"><b>Please keep a backup plan.</b> Posting here puts your request in front of the community, but it doesn't guarantee that your fee will be covered. Sponsors are volunteers who choose whom to support, and some requests won't be picked up before the deadline. Make sure you can still submit your application on time.
+        <label style="margin-top:8px"><input type="checkbox" id="a-ack"> I understand that a sponsor isn't guaranteed</label></div>
       <div><button type="submit">Submit application</button></div>
       <p class="err" id="form-error" hidden></p>
     </form>
@@ -302,6 +312,9 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
       <h2>Where the money goes</h2>
       <p>Pool shares go into one account run by the organisers, and every dollar goes to UMass Amherst application fees. Nobody takes a cut. We keep a record of every pledge and payment, and any pledge that doesn't complete is released, so nothing is charged.</p>
 
+      <h2>No guarantees, just community</h2>
+      <p>PhD Fee Bridge connects applicants with people who want to help. We can't promise that every request will be covered, and we don't pay fees ourselves. Every fee here is covered by a volunteer sponsor's choice. We're not part of UMass Amherst and can't affect admissions decisions. A covered fee only means one less thing standing between you and submitting your application.</p>
+
       <h2>Your privacy</h2>
       <p>Sponsors see an applicant's name, country, program and research statement. Email addresses, UMass applicant IDs and application numbers are never shown publicly. The sponsor who pays a fee sees the application number and UMass ID so the payment reaches the right application. Sponsors can always stay anonymous.</p>
 
@@ -323,7 +336,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
     </form>
     <div id="track-result"></div>
   </main>
-  <footer><a href="#about" id="foot-about">About</a> · Independent community project. Not affiliated with or endorsed by UMass Amherst.</footer>
+  <footer><a href="#about" id="foot-about">About</a> · Independent community project. Not affiliated with or endorsed by UMass Amherst. Sponsorship isn't guaranteed.</footer>
 </div>
 <div class="scrim" id="scrim" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" id="modal"></div></div>
 <div class="toast" id="toast" hidden></div>
@@ -339,7 +352,7 @@ var CONFIRM_MS = 7 * 24 * 3600e3; // a paid fee counts as confirmed if the appli
 var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
 
 var TABLES = {
-  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt"],
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink"],
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
@@ -388,12 +401,18 @@ function pubApp(db, a) {
   return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
     waiver: a.waiver, statement: a.statement, region: regionOf(a.country), status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
+/* Applicants may paste the third-party payment link from their UMass portal. Only umass.edu links are accepted. */
+function cleanLink(u) {
+  u = String(u || "").trim(); if (!u) return "";
+  if (u.length > 600 || !/^https:\/\/([a-z0-9-]+\.)*umass\.edu(\/|\?|$)/i.test(u)) fail("The payment link must be the one from your UMass application portal (it starts with https:// and is on umass.edu).");
+  return u;
+}
 function isLive(a) { return yes(a.verified); }
 function pledgeView(db, p) {
   var a = db.table("Applications").all().filter(function (x) { return x.id === p.appId; })[0];
   var v = { code: p.code, amount: num(p.amount), status: p.status, createdAt: num(p.createdAt), dueAt: num(p.dueAt),
     payMethod: p.payMethod, payRef: p.payRef, anon: yes(p.sponsorAnon), app: a ? pubApp(db, a) : null };
-  if (a && (p.status === "due" || p.status === "paid")) { v.appNo = a.appNo; v.umassId = a.umassId; }
+  if (a && (p.status === "due" || p.status === "paid")) { v.appNo = a.appNo; v.umassId = a.umassId; if (num(p.amount) >= FEE && a.payLink) v.payLink = a.payLink; }
   return v;
 }
 function usedThisCycle(db, email, c) {
@@ -409,7 +428,7 @@ function sponsorView(db, s) {
     status: s.status, cycle: c, used: Math.round(usedThisCycle(db, s.email, c) * 10) / 10, countsThisCycle: matchesCycle(s, c) };
 }
 
-function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
+function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.payLink = a.payLink || ""; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
 function sendCode(db, a) {
   db.mail(a.email, "Your PhD Fee Bridge verification code: " + a.verifyCode,
     "Hi " + a.name.split(" ")[0] + ",\n\nYour verification code is " + a.verifyCode + ". Enter it on the site to put your request on the sponsor board.\n\nYour application number is " + a.appNo + ". Keep it private.\n\n" + db.site + "#track");
@@ -485,6 +504,7 @@ function handle(req, db) {
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
     var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0, verified: "false", verifyCode: String(Math.floor(100000 + Math.random() * 900000)) };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
+    o.payLink = cleanLink(d.payLink);
     A.add(o); db.log(o.appNo, "applied (not yet verified)", o.country + ", " + o.program);
     sendCode(db, o);
     var out = { appNo: o.appNo }; if (db.demo) out.demoCode = o.verifyCode;
@@ -504,6 +524,12 @@ function handle(req, db) {
         .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     }
     return trackView(db, va);
+  }
+  if (act === "setLink") {
+    var la = appByNo(), st0 = pubApp(db, la).status;
+    if (st0 === "paid" || st0 === "confirmed") fail("Your fee is already paid.");
+    la.payLink = cleanLink(req.payLink); A.save(la); db.log(la.appNo, la.payLink ? "payment link added" : "payment link removed", "");
+    return trackView(db, la);
   }
   if (act === "confirmPaid") {
     var ca = appByNo();
@@ -612,7 +638,7 @@ function seedData(now) {
   var H = 3600e3, c = cycleOf(now);
   function fill(cols, o) { var r = {}; cols.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
   var apps = [
-    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
+    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true", payLink: "https://applygrad.umass.edu/register/pay?demo=amina",
       statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." },
     { id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 1, verified: "true",
       statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." },
@@ -649,7 +675,7 @@ function seedData(now) {
 /* ===== Website ===== */
 var API_URL = (window.FEE_BRIDGE_API || "").trim();
 var REMOTE = !!API_URL;
-var KEY = "feebridge-v5";
+var KEY = "feebridge-v6";
 const $ = id => document.getElementById(id);
 const usd = n => "$" + Number(n).toFixed(0);
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -883,6 +909,7 @@ function drawCheckout() {
   const share = v.amount < FEE ? `<p class="hint" style="margin:0">Your ${usd(v.amount)} goes to the PhD Fee Bridge pool account. When every share is in, the organiser pays the ${usd(FEE)} fee to UMass Amherst.</p>` : "";
   if (co.step === "method") m.innerHTML = `${head}
     <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(v.appNo)}</dd><dt>Program</dt><dd>${esc(s.level)}, ${esc(s.program)}</dd><dt>Your share</dt><dd>${usd(v.amount)} of ${usd(FEE)}</dd></dl>${share}
+    ${v.payLink ? `<button class="method umass" data-m="umass" data-v="UMass payment page">Pay on UMass's own payment page <small>Recommended. ${esc(first(s.name))} added their UMass link, so the money goes straight to their application.</small></button><p class="hint" style="margin:0">Or use the simulated checkout:</p>` : ""}
     <div class="methods">
       <button class="method" data-m="card" data-v="Credit card">Credit card <small>Accepted by UMass</small></button>
       <button class="method" data-m="card" data-v="Debit card">Debit card <small>Card network</small></button>
@@ -893,8 +920,19 @@ function drawCheckout() {
   else if (co.step === "card") m.innerHTML = `${head}
     <div class="field"><label for="k-num">Card number</label><input id="k-num" inputmode="numeric" value="4242 4242 4242 4242"></div>
     <div class="grid2" style="grid-template-columns:1fr 1fr"><div class="field"><label for="k-exp">Expiry</label><input id="k-exp" value="12/29"></div><div class="field"><label for="k-cvc">CVC</label><input id="k-cvc" value="123"></div></div>
-    <p class="sim">Test card filled in. Don't enter a real card. Nothing you type here is sent anywhere.</p>
+    <fieldset class="billing"><legend>Billing address</legend>
+      <div class="field"><label for="k-bname">Name on card</label><input id="k-bname" autocomplete="cc-name" value="Test Sponsor"></div>
+      <div class="field"><label for="k-street">Street address</label><input id="k-street" autocomplete="address-line1" value="1 Test Street"></div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr"><div class="field"><label for="k-city">City</label><input id="k-city" autocomplete="address-level2" value="Amherst"></div><div class="field"><label for="k-zip">ZIP / postal code</label><input id="k-zip" autocomplete="postal-code" value="01003"></div></div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr"><div class="field"><label for="k-state">State / region</label><input id="k-state" autocomplete="address-level1" value="MA"></div><div class="field"><label for="k-bcountry">Country</label><input id="k-bcountry" autocomplete="country-name" value="United States"></div></div>
+    </fieldset>
+    <p class="sim">Test card and address filled in. Don't enter real details. Nothing you type here is sent or stored.</p>
     <div class="actions"><button data-m="submit">Pay ${usd(v.amount)}</button><button class="ghost" data-m="back">Back</button></div>`;
+  else if (co.step === "umass") m.innerHTML = `${head}
+    <p style="margin:0">This opens ${esc(first(s.name))}'s UMass payment page in a new tab. Pay the ${usd(FEE)} fee there by card (UMass asks for the card and billing address). Then come back and tap "I've paid".</p>
+    <a class="btn-link" href="${esc(v.payLink)}" target="_blank" rel="noopener noreferrer">Open UMass payment page</a>
+    ${REMOTE ? "" : `<p class="sim">Preview: this example link isn't real and won't load.</p>`}
+    <div class="actions"><button data-m="submit">I've paid on UMass's page</button><button class="ghost" data-m="back">Back</button></div>`;
   else if (co.step === "wallet") m.innerHTML = `${head}
     <p style="margin:0">You'd now be sent to ${esc(co.method)} to approve ${usd(v.amount)}.</p>
     <p class="sim">Simulated. In the demo, approving completes the payment straight away.</p>
@@ -910,7 +948,7 @@ $("modal").addEventListener("click", async e => {
   const b = e.target.closest("[data-m]"); if (!b || co.step === "processing") return; const a = b.dataset.m;
   if (a === "close") return closeCheckout();
   if (a === "back") co.step = "method";
-  if (a === "card" || a === "wallet") { co.step = a; co.method = b.dataset.v; }
+  if (a === "card" || a === "wallet" || a === "umass") { co.step = a; co.method = b.dataset.v; }
   if (a === "submit") {
     co.step = "processing"; drawCheckout();
     const started = Date.now(), m = mine.find(x => x.code === co.v.code);
@@ -954,9 +992,10 @@ $("apply-form").addEventListener("submit", e => {
   if (wordCount(v("a-statement")) > 150) return fail(`Your statement is ${wordCount(v("a-statement"))} words. Trim it to 150 or fewer.`, "a-statement");
   const wv = document.querySelector('input[name="a-waiver"]:checked');
   if (!wv) return fail("Tell us about the fee waiver: either you don't qualify, or your request was declined.", "a-waiver-none");
+  if (!$("a-ack").checked) return fail("Please tick the box to show you understand a sponsor isn't guaranteed.", "a-ack");
   err.hidden = true;
   act(async () => {
-    const d = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value };
+    const d = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value, payLink: v("a-paylink") };
     let r; try { r = await call({ action: "apply", data: d }); } catch (er) { return fail(er.message); }
     $("done-no").textContent = r.appNo; $("apply-form").hidden = true; $("apply-done").hidden = false;
     pendingVerify = { appNo: r.appNo, email: d.email }; $("v-code").value = ""; $("v-err").hidden = true; $("v-ok").hidden = true; $("v-box").hidden = false;
@@ -1054,10 +1093,16 @@ async function lookupTrack(appNo, email, quiet) {
     <div class="label-row"><div class="who">${esc(s.name)}</div>${pill(s)}</div>${bar(s)}
     <div>${status}</div>
     <dl class="kv">${steps.map(([l, ok]) => `<dt>${ok ? "Done" : "Pending"}</dt><dd style="font-family:var(--body)">${l}</dd>`).join("")}</dl>
+    ${s.status !== "paid" && s.status !== "confirmed" ? `<form id="tl-form" class="field" style="margin:0" novalidate><label for="tl-link">UMass payment link <span class="hint">(optional, shown only to a sponsor covering your full fee)</span></label>
+      <div class="actions" style="margin:0"><input id="tl-link" style="flex:1;min-width:0" placeholder="https://applygrad.umass.edu/..." value="${esc(s.payLink || "")}"><button type="submit" class="ghost">Save link</button></div><p class="err" id="tl-err" hidden></p></form>` : ""}
     ${s.releases ? `<p class="hint" style="margin:0">${s.releases} earlier pledge${s.releases > 1 ? "s were" : " was"} released.</p>` : ""}
   </div>`;
 }
 $("track-result").addEventListener("submit", e => {
+  if (e.target.id === "tl-form") {
+    e.preventDefault();
+    return act(async () => { try { await call({ action: "setLink", appNo: track.appNo, email: track.email, payLink: $("tl-link").value }); toast("Payment link saved."); await lookupTrack(track.appNo, track.email); } catch (err) { $("tl-err").textContent = err.message; $("tl-err").hidden = false; } });
+  }
   if (e.target.id !== "tv-form") return; e.preventDefault();
   act(async () => { const v = await verifyCode(track.appNo, track.email, $("tv-code").value, $("tv-err")); if (v) { toast("Verified. You're on the sponsor board."); await lookupTrack(track.appNo, track.email); refresh(); } });
 });

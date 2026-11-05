@@ -88,7 +88,7 @@ var CONFIRM_MS = 7 * 24 * 3600e3; // a paid fee counts as confirmed if the appli
 var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
 
 var TABLES = {
-  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt"],
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink"],
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
@@ -137,12 +137,18 @@ function pubApp(db, a) {
   return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
     waiver: a.waiver, statement: a.statement, region: regionOf(a.country), status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
+/* Applicants may paste the third-party payment link from their UMass portal. Only umass.edu links are accepted. */
+function cleanLink(u) {
+  u = String(u || "").trim(); if (!u) return "";
+  if (u.length > 600 || !/^https:\/\/([a-z0-9-]+\.)*umass\.edu(\/|\?|$)/i.test(u)) fail("The payment link must be the one from your UMass application portal (it starts with https:// and is on umass.edu).");
+  return u;
+}
 function isLive(a) { return yes(a.verified); }
 function pledgeView(db, p) {
   var a = db.table("Applications").all().filter(function (x) { return x.id === p.appId; })[0];
   var v = { code: p.code, amount: num(p.amount), status: p.status, createdAt: num(p.createdAt), dueAt: num(p.dueAt),
     payMethod: p.payMethod, payRef: p.payRef, anon: yes(p.sponsorAnon), app: a ? pubApp(db, a) : null };
-  if (a && (p.status === "due" || p.status === "paid")) { v.appNo = a.appNo; v.umassId = a.umassId; }
+  if (a && (p.status === "due" || p.status === "paid")) { v.appNo = a.appNo; v.umassId = a.umassId; if (num(p.amount) >= FEE && a.payLink) v.payLink = a.payLink; }
   return v;
 }
 function usedThisCycle(db, email, c) {
@@ -158,7 +164,7 @@ function sponsorView(db, s) {
     status: s.status, cycle: c, used: Math.round(usedThisCycle(db, s.email, c) * 10) / 10, countsThisCycle: matchesCycle(s, c) };
 }
 
-function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
+function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.payLink = a.payLink || ""; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
 function sendCode(db, a) {
   db.mail(a.email, "Your PhD Fee Bridge verification code: " + a.verifyCode,
     "Hi " + a.name.split(" ")[0] + ",\n\nYour verification code is " + a.verifyCode + ". Enter it on the site to put your request on the sponsor board.\n\nYour application number is " + a.appNo + ". Keep it private.\n\n" + db.site + "#track");
@@ -234,6 +240,7 @@ function handle(req, db) {
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
     var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0, verified: "false", verifyCode: String(Math.floor(100000 + Math.random() * 900000)) };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
+    o.payLink = cleanLink(d.payLink);
     A.add(o); db.log(o.appNo, "applied (not yet verified)", o.country + ", " + o.program);
     sendCode(db, o);
     var out = { appNo: o.appNo }; if (db.demo) out.demoCode = o.verifyCode;
@@ -253,6 +260,12 @@ function handle(req, db) {
         .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     }
     return trackView(db, va);
+  }
+  if (act === "setLink") {
+    var la = appByNo(), st0 = pubApp(db, la).status;
+    if (st0 === "paid" || st0 === "confirmed") fail("Your fee is already paid.");
+    la.payLink = cleanLink(req.payLink); A.save(la); db.log(la.appNo, la.payLink ? "payment link added" : "payment link removed", "");
+    return trackView(db, la);
   }
   if (act === "confirmPaid") {
     var ca = appByNo();
@@ -361,7 +374,7 @@ function seedData(now) {
   var H = 3600e3, c = cycleOf(now);
   function fill(cols, o) { var r = {}; cols.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
   var apps = [
-    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
+    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true", payLink: "https://applygrad.umass.edu/register/pay?demo=amina",
       statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." },
     { id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 1, verified: "true",
       statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." },
