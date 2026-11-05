@@ -96,6 +96,27 @@ body.busy { cursor: progress }
 .codebox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px }
 .codebox summary { cursor: pointer; font-weight: 600; color: var(--accent) }
 #mine:not(:empty) { margin-bottom: 14px }
+.h3 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 18px 0 10px }
+.pill.pool { color: var(--pledged); background: var(--pledged-soft) }
+.bar { display: flex; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; width: 100% }
+.bar span { display: block; height: 100% }
+.b-paid { background: var(--paid) } .b-pledged { background: var(--pledged) }
+.bar-row { grid-column: 1 / -1; margin-top: 10px }
+.pool-list { display: grid; gap: 8px; margin-bottom: 18px }
+.pool-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(80px, 1fr) auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer }
+.pool-row:hover, .pool-row:focus-visible { border-color: var(--accent); outline: none }
+.pool-who { display: grid; min-width: 0 } .pool-who .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.pool-left { font-family: var(--mono); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums }
+@media (max-width: 480px) { .pool-row { grid-template-columns: 1fr auto } .pool-row .bar { grid-column: 1 / -1; grid-row: 2 } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.chip { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-family: var(--mono); font-weight: 500 }
+.chip small { font-family: var(--body); color: var(--muted); font-size: 12px }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent) }
+.custom { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--muted) }
+.custom input { width: 84px }
+.contrib { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted) }
+.contrib b { font-family: var(--mono); color: var(--ink); font-weight: 500 }
+.mine-row { margin-bottom: 8px }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); z-index: 30 }
 .thanks { columns: 2 220px; gap: 24px; font-size: 14px }
 .thanks div { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line) }
@@ -121,6 +142,7 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
     <nav>
       <a href="#board" id="nav-board">Sponsor board</a>
       <a href="#apply" id="nav-apply">Apply</a>
+      <a href="#sponsor" id="nav-sponsor">Become a sponsor</a>
       <a href="#track" id="nav-track">Track my application</a>
     </nav>
   </header>
@@ -129,7 +151,7 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
 
   <main id="view-board">
     <h1>African applicants to UMass Amherst waiting on a fee</h1>
-    <p class="lede">Tap an applicant to read their research statement. Pledge to hold their fee for 24 hours and you'll get a pledge code. Pay with Pay now, or the pledge is released so someone else can step in.</p>
+    <p class="lede">Tap an applicant to read their research statement. Cover the whole $90 fee, or chip in part and pool with others. Nobody pays until a fee is fully pledged; then everyone has 24 hours to pay their share.</p>
     <details class="codebox" id="code-box"><summary>Already pledged? Enter your pledge code</summary>
       <form id="code-form" novalidate class="grid2" style="margin-top:12px">
         <div class="field"><label for="c-code">Pledge code</label><input id="c-code" placeholder="PL-XXXX"></div>
@@ -138,6 +160,7 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
         <p class="err" id="c-err" hidden></p>
       </form></details>
     <div id="mine"></div>
+    <div id="pools"></div>
     <div class="stats" id="stats"></div>
     <div class="filters">
       <select id="f-field" aria-label="Filter by research area"><option value="">All research areas</option></select>
@@ -194,6 +217,39 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
     </div>
   </main>
 
+  <main id="view-sponsor" hidden>
+    <h1>Become a committed sponsor</h1>
+    <p class="lede">Promise to cover a number of students' fees each application season (September to January). We'll email you when the season opens and again before the December deadlines. Pledges stay first come, first served, and you can hold as many at once as the number you commit to.</p>
+    <form class="box" id="commit-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="s-name">Your name</label><input id="s-name" autocomplete="name"></div>
+        <div class="field"><label for="s-email">Email <span class="hint">(for reminders, private)</span></label><input id="s-email" type="email" autocomplete="email"></div>
+      </div>
+      <div class="radio-row"><label><input type="radio" name="s-anon" id="s-anon-no" checked> Show my name</label><label><input type="radio" name="s-anon" id="s-anon-yes"> Stay anonymous</label></div>
+      <div class="grid2">
+        <div class="field"><label for="s-students">Students per cycle</label><input id="s-students" type="number" min="1" max="50" value="1" inputmode="numeric"><span class="hint">Each is one $90 fee. Shares of a pool count toward it.</span></div>
+        <div class="field"><label for="s-cycles">Which cycle</label><select id="s-cycles"></select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="s-field">Research area you care about <span class="hint">(optional)</span></label><input id="s-field" placeholder="e.g. Public health"></div>
+        <div class="field"><label for="s-country">Country you care about <span class="hint">(optional)</span></label><select id="s-country"><option value="">Any country</option></select></div>
+      </div>
+      <span class="hint">If you pick an area or country, we'll also email you when a matching applicant applies.</span>
+      <div><button type="submit">Sign up</button></div>
+      <p class="err" id="s-err" hidden></p>
+    </form>
+    <h2>Already signed up?</h2>
+    <form class="box" id="manage-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="mg-code">Sponsor code</label><input id="mg-code" placeholder="SP-XXXX"></div>
+        <div class="field"><label for="mg-email">Email</label><input id="mg-email" type="email"></div>
+      </div>
+      <div class="actions"><button type="submit">Find my commitment</button><span class="hint">Demo tip: SP-L3NA with lena@example.com</span></div>
+      <p class="err" id="mg-err" hidden></p>
+    </form>
+    <div id="commit-result"></div>
+  </main>
+
   <main id="view-track" hidden>
     <h1>Track my application</h1>
     <p class="lede">Enter the application number you got when you applied, and your email.</p>
@@ -216,139 +272,297 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted) }
 <script>
 const PROGRAMS = [["Accounting",["PhD"]],["Afro-American Studies",["PhD"]],["Animal Biotechnology & Biomedical Sciences",["PhD"]],["Anthropology",["PhD"]],["Astronomy",["PhD"]],["Biomedical Engineering",["PhD"]],["Biostatistics: Public Health",["PhD"]],["Chemical Engineering",["PhD"]],["Chemistry",["PhD"]],["Civil Engineering",["PhD"]],["Communication",["PhD"]],["Community Health Education: Public Health",["PhD"]],["Comparative Literature",["PhD"]],["Computer Science",["PhD"]],["Earth, Geographic, and Climate Sciences",["PhD"]],["Economics",["PhD"]],["Education",["PhD"]],["Electrical and Computer Engineering",["PhD"]],["English",["PhD"]],["Environmental Conservation",["PhD"]],["Environmental Engineering",["PhD"]],["Environmental Health Sciences: Public Health",["PhD"]],["Epidemiology: Public Health",["PhD"]],["Food Science",["PhD"]],["German and Scandinavian Studies",["PhD"]],["Health Policy and Management: Public Health",["PhD"]],["Hispanic Literatures and Linguistics",["PhD"]],["History",["PhD"]],["Industrial Engineering and Operations Research",["PhD"]],["Kinesiology",["PhD"]],["Linguistics",["PhD"]],["Management: Doctoral Program",["PhD"]],["Materials Science and Engineering",["PhD"]],["Mathematics",["PhD"]],["Mechanical Engineering",["PhD"]],["Microbiology",["PhD"]],["Molecular & Cellular Biology",["PhD"]],["Music",["PhD"]],["Neuroscience & Behavior",["PhD"]],["Nursing",["PhD"]],["Nutrition: Public Health",["PhD"]],["Organismic & Evolutionary Biology",["PhD"]],["Philosophy",["MA/PhD"]],["Physics",["PhD"]],["Plant & Soil Sciences",["PhD"]],["Plant Biology",["PhD"]],["Political Science",["PhD"]],["Polymer Science and Engineering",["MS/PhD"]],["Psychological and Brain Sciences",["PhD"]],["Regional Planning",["PhD"]],["School Psychology",["PhD"]],["Sociology",["PhD"]],["Speech, Language, and Hearing Sciences",["PhD"]],["Statistics",["PhD"]]];
 /* ===== Shared rules: the same code runs in Google Apps Script (Sheet mode) and in the browser (preview mode). ===== */
-var HOLD_MS = 24 * 3600e3;
-var COLS = ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement",
-  "status", "pledgeCode", "sponsorName", "sponsorEmail", "sponsorAnon", "pledgedAt", "payMethod", "payRef", "paidAt", "releases"];
+var FEE = 90;                    // UMass Amherst graduate application fee, USD
+var MIN_SHARE = 5;               // smallest pool contribution, USD
+var HOLD_MS = 24 * 3600e3;       // time to pay once a fee is fully pledged
+var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
+
+var TABLES = {
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases"],
+  Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
+  Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
+};
 /* For now the program is open to applicants from the 54 African countries. */
 var COUNTRIES = ["Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Republic of the Congo", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "The Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"];
+
 var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function rnd(n) { var s = ""; for (var i = 0; i < n; i++) s += ALPH[Math.floor(Math.random() * ALPH.length)]; return s; }
 function wordCount(t) { return (String(t || "").trim().match(/\S+/g) || []).length; }
 function lc(s) { return String(s || "").trim().toLowerCase(); }
 function fail(m) { throw new Error(m); }
-function isAnon(o) { return String(o.sponsorAnon) === "true"; }
+function yes(v) { return String(v) === "true"; }
+function num(v) { return Number(v) || 0; }
+function sum(list, f) { return list.reduce(function (a, x) { return a + f(x); }, 0); }
+function money(n) { return "$" + Number(n).toFixed(0); }
 
-/* What anyone can see. Email, UMass applicant ID, application number and pledge code never leave through here. */
-function pub(o) {
-  return { id: o.id, name: o.name, country: o.country, field: o.field, program: o.program, level: o.level, deadline: o.deadline,
-    waiver: o.waiver, statement: o.statement, status: o.status,
-    sponsor: o.status === "open" || isAnon(o) ? "" : o.sponsorName, sponsorAnon: o.status !== "open" && isAnon(o),
-    pledgedAt: Number(o.pledgedAt) || 0, releases: Number(o.releases) || 0, payRef: o.status === "paid" ? o.payRef : "" };
+/* A cycle is one UMass application season, September to January, named by the fall it leads to.
+   Sep 2026 – Jan 2027 is the "Fall 2027" cycle. Between February and August, the next cycle is the upcoming one. */
+function cycleOf(t) { var d = new Date(t), m = d.getUTCMonth() + 1, y = d.getUTCFullYear(); return m >= 2 ? y + 1 : y; }
+function inSeason(t) { var m = new Date(t).getUTCMonth() + 1; return m >= 9 || m === 1; }
+function matchesCycle(s, c) { return s.status === "active" && (s.cycles === "every" || num(s.cycles) === c); }
+
+function pledgesFor(db, appId) { return db.table("Pledges").all().filter(function (p) { return p.appId === appId && p.status !== "released"; }); }
+function poolOf(db, app) {
+  var ps = pledgesFor(db, app.id);
+  var committed = sum(ps, function (p) { return num(p.amount); }), paid = sum(ps.filter(function (p) { return p.status === "paid"; }), function (p) { return num(p.amount); });
+  var held = ps.filter(function (p) { return p.status === "held"; }), due = ps.filter(function (p) { return p.status === "due"; });
+  var start = held.length ? Math.min.apply(null, held.map(function (p) { return num(p.createdAt); })) : 0;
+  return {
+    committed: committed, paid: paid, left: Math.max(0, FEE - committed),
+    endsAt: start ? start + POOL_MS : 0,
+    dueBy: due.length ? Math.min.apply(null, due.map(function (p) { return num(p.dueAt); })) : 0,
+    contributors: ps.map(function (p) { return { name: yes(p.sponsorAnon) ? "" : p.sponsorName, amount: num(p.amount), status: p.status }; })
+  };
 }
-function sponsorView(o) { var v = pub(o); v.appNo = o.appNo; v.umassId = o.umassId; v.code = o.pledgeCode; v.payMethod = o.payMethod || ""; return v; }
-function clearPledge(o) {
-  o.status = "open"; o.pledgeCode = ""; o.sponsorName = ""; o.sponsorEmail = ""; o.sponsorAnon = ""; o.pledgedAt = "";
-  o.releases = (Number(o.releases) || 0) + 1;
+function statusOf(pool) { return pool.paid >= FEE ? "paid" : pool.committed >= FEE ? "funding" : pool.committed > 0 ? "pooling" : "open"; }
+
+/* What anyone can see. Emails, UMass applicant IDs, application numbers and codes never leave through here. */
+function pubApp(db, a) {
+  var pool = poolOf(db, a);
+  return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
+    waiver: a.waiver, statement: a.statement, status: statusOf(pool), pool: pool, releases: num(a.releases) };
+}
+function pledgeView(db, p) {
+  var a = db.table("Applications").all().filter(function (x) { return x.id === p.appId; })[0];
+  var v = { code: p.code, amount: num(p.amount), status: p.status, createdAt: num(p.createdAt), dueAt: num(p.dueAt),
+    payMethod: p.payMethod, payRef: p.payRef, anon: yes(p.sponsorAnon), app: a ? pubApp(db, a) : null };
+  if (a && (p.status === "due" || p.status === "paid")) { v.appNo = a.appNo; v.umassId = a.umassId; }
+  return v;
+}
+function usedThisCycle(db, email, c) {
+  return sum(db.table("Pledges").all().filter(function (p) { return lc(p.sponsorEmail) === lc(email) && p.status !== "released" && cycleOf(num(p.createdAt)) === c; }),
+    function (p) { return num(p.amount); }) / FEE;
+}
+function commitmentOf(db, email, c) {
+  return db.table("Sponsors").all().filter(function (s) { return lc(s.email) === lc(email) && matchesCycle(s, c); })[0];
+}
+function sponsorView(db, s) {
+  var c = cycleOf(db.now());
+  return { code: s.code, name: s.name, anon: yes(s.anon), students: num(s.students), cycles: s.cycles, prefField: s.prefField, prefCountry: s.prefCountry,
+    status: s.status, cycle: c, used: Math.round(usedThisCycle(db, s.email, c) * 10) / 10, countsThisCycle: matchesCycle(s, c) };
+}
+
+function syncApp(db, a) {
+  var st = statusOf(poolOf(db, a));
+  if (a.status !== st) { a.status = st; if (st === "paid") a.paidAt = db.now(); db.table("Applications").save(a); }
+}
+function releasePledge(db, p, why) {
+  var a = db.table("Applications").all().filter(function (x) { return x.id === p.appId; })[0];
+  db.log(a ? a.appNo : "", why, p.code + " " + money(p.amount));
+  p.status = "released"; db.table("Pledges").save(p);
+  if (a) { a.releases = num(a.releases) + 1; db.table("Applications").save(a); syncApp(db, a); }
 }
 function expireHolds(db) {
-  var t = db.now();
-  db.all().forEach(function (o) {
-    if (o.status === "pledged" && t - Number(o.pledgedAt) >= HOLD_MS) { db.log(o.appNo, "auto-released after 24h", o.pledgeCode); clearPledge(o); db.save(o); }
+  var t = db.now(), P = db.table("Pledges");
+  P.all().forEach(function (p) { if (p.status === "due" && t >= num(p.dueAt)) releasePledge(db, p, "released: not paid within 24 hours"); });
+  db.table("Applications").all().forEach(function (a) {
+    var pool = poolOf(db, a), closeToDeadline = new Date(a.deadline + "T23:59:59Z").getTime() - t < 2 * 864e5;
+    if (pool.endsAt && (t >= pool.endsAt || closeToDeadline)) {
+      pledgesFor(db, a.id).filter(function (p) { return p.status === "held"; }).forEach(function (p) {
+        releasePledge(db, p, "released: pool didn't fill in time");
+        db.mail(p.sponsorEmail, "Your pledge for " + a.name + " was released",
+          "The pool for " + a.name + "'s UMass Amherst application fee didn't fill in time, so your " + money(p.amount) + " pledge (" + p.code + ") was released. Nothing was charged.");
+      });
+    }
   });
 }
 
 function handle(req, db) {
   expireHolds(db);
-  var rs = db.all(), a = req.action;
-  function byCode() {
+  var A = db.table("Applications"), P = db.table("Pledges"), S = db.table("Sponsors"), t = db.now(), act = req.action;
+  function app(id) { var a = A.all().filter(function (x) { return x.id === id; })[0]; if (!a) fail("That applicant is no longer listed."); return a; }
+  function pledgeByCode() {
     var code = String(req.code || "").trim().toUpperCase();
-    var o = rs.filter(function (r) { return r.pledgeCode && r.pledgeCode === code && lc(r.sponsorEmail) === lc(req.email); })[0];
-    if (!o) fail("No pledge matches that code and email. Unpaid pledges are released after 24 hours.");
-    return o;
+    var p = P.all().filter(function (x) { return x.code === code && lc(x.sponsorEmail) === lc(req.email); })[0];
+    if (!p) fail("No pledge matches that code and email.");
+    return p;
   }
-  if (a === "list") return { students: rs.map(pub), now: db.now() };
+  function sponsorByCode() {
+    var code = String(req.code || "").trim().toUpperCase();
+    var s = S.all().filter(function (x) { return x.code === code && lc(x.email) === lc(req.email); })[0];
+    if (!s) fail("No sponsor sign-up matches that code and email.");
+    return s;
+  }
 
-  if (a === "apply") {
+  if (act === "list") {
+    var c = cycleOf(t);
+    var promised = sum(S.all().filter(function (s) { return matchesCycle(s, c); }), function (s) { return Math.max(0, num(s.students) - usedThisCycle(db, s.email, c)); });
+    return { students: A.all().map(function (a) { return pubApp(db, a); }), promised: Math.floor(promised), cycle: c, inSeason: inSeason(t), now: t };
+  }
+
+  if (act === "apply") {
     var d = req.data || {}, keys = ["name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement"];
     keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
     if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
     if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("For now, applications are open to students from African countries.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
-    var max = rs.reduce(function (m, r) { return Math.max(m, Number(String(r.appNo).split("-")[2]) || 0); }, 4299);
-    var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: db.now(), status: "open", releases: 0 };
+    var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
+    var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0 };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
-    db.add(o); db.log(o.appNo, "applied", "");
+    A.add(o); db.log(o.appNo, "applied", o.country + ", " + o.program);
+    db.mail(o.email, "Your PhD Fee Bridge application number: " + o.appNo,
+      "Hi " + o.name.split(" ")[0] + ",\n\nYour request is on the sponsor board. Your private application number is " + o.appNo + ". Use it with this email address to track your application.\n\n" + db.site + "#track");
+    S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(o.field).indexOf(lc(s.prefField)) >= 0) || (s.prefCountry && s.prefCountry === o.country)); })
+      .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", o.name + " from " + o.country + " (" + o.level + ", " + o.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     return { appNo: o.appNo };
   }
-  if (a === "pledge") {
-    var p = rs.filter(function (r) { return r.id === req.id; })[0];
-    if (!p) fail("That applicant is no longer listed.");
-    if (p.status !== "open") fail("Someone else has just pledged for this applicant.");
-    if (String(req.email || "").indexOf("@") < 0) fail("Add your email so we can send your receipt.");
+
+  if (act === "pledge") {
+    var a = app(req.id), pool = poolOf(db, a);
+    if (statusOf(pool) === "paid" || statusOf(pool) === "funding") fail("This fee is already fully pledged.");
+    var amount = Math.round(num(req.amount));
+    if (amount < MIN_SHARE && amount !== pool.left) fail("The smallest amount you can chip in is $" + MIN_SHARE + ".");
+    if (amount > pool.left) fail("Only " + money(pool.left) + " is left on this fee.");
+    if (String(req.email || "").indexOf("@") < 0) fail("Add your email so we can send your pledge code.");
     var anon = !!req.anon;
     if (!anon && !String(req.name || "").trim()) fail("Add your name, or choose to stay anonymous.");
-    if (rs.some(function (r) { return r.status === "pledged" && lc(r.sponsorEmail) === lc(req.email); })) fail("You already have a pledge on hold. Pay or release it first.");
-    p.status = "pledged"; p.pledgeCode = "PL-" + rnd(4); p.sponsorName = String(req.name || "").trim().slice(0, 120);
-    p.sponsorEmail = String(req.email).trim(); p.sponsorAnon = String(anon); p.pledgedAt = db.now();
-    db.save(p); db.log(p.appNo, "pledged", p.pledgeCode);
-    return sponsorView(p);
-  }
-  if (a === "sponsor") return sponsorView(byCode());
-  if (a === "pay") {
-    var q = byCode();
-    if (q.status === "pledged") {
-      q.status = "paid"; q.payMethod = String(req.method || "Credit card").slice(0, 40); q.payRef = "SIM-" + rnd(6); q.paidAt = db.now();
-      db.save(q); db.log(q.appNo, "paid (simulated)", q.payRef + " " + q.payMethod);
+    var mine = P.all().filter(function (p) { return lc(p.sponsorEmail) === lc(req.email) && (p.status === "held" || p.status === "due"); });
+    if (mine.some(function (p) { return p.appId === a.id; })) fail("You already have a pledge on this applicant.");
+    var commitment = commitmentOf(db, req.email, cycleOf(t)), limit = commitment ? Math.max(1, num(commitment.students)) : 1;
+    if (mine.length >= limit) fail(limit === 1 ? "You already have a pledge open. Pay or release it first, or sign up as a committed sponsor to hold more." : "You already have " + limit + " pledges open, which is your limit this cycle.");
+    var p = { code: "PL-" + rnd(4), appId: a.id, createdAt: t, sponsorName: String(req.name || "").trim().slice(0, 120), sponsorEmail: String(req.email).trim(),
+      sponsorAnon: String(anon), amount: amount, status: "held", dueAt: "", payMethod: "", payRef: "", paidAt: "" };
+    P.add(p); db.log(a.appNo, "pledged", p.code + " " + money(amount));
+    db.mail(p.sponsorEmail, "Your pledge code: " + p.code, "Thank you for pledging " + money(amount) + " toward " + a.name + "'s UMass Amherst application fee.\n\nYour pledge code is " + p.code + ". Use it with this email address on the sponsor board to pay or release it.\n\n" + db.site);
+    if (pool.committed + amount >= FEE) {
+      pledgesFor(db, a.id).filter(function (x) { return x.status === "held"; }).forEach(function (x) {
+        x.status = "due"; x.dueAt = t + HOLD_MS; P.save(x);
+        db.mail(x.sponsorEmail, "Time to pay: " + a.name + "'s fee is fully pledged", "The " + money(FEE) + " fee for " + a.name + " is now fully pledged. Please pay your " + money(x.amount) + " share within 24 hours with pledge code " + x.code + ".\n\n" + db.site);
+      });
+      db.log(a.appNo, "fully pledged", "");
+    } else {
+      db.mail(a.email, "Someone chipped in toward your fee", "A sponsor pledged " + money(amount) + " toward your UMass Amherst application fee. " + money(FEE - pool.committed - amount) + " is still needed.");
     }
-    return sponsorView(q);
+    syncApp(db, a);
+    return pledgeView(db, p);
   }
-  if (a === "release") {
-    var r = byCode();
-    if (r.status !== "pledged") fail("This pledge is already paid.");
-    db.log(r.appNo, "released by sponsor", r.pledgeCode); clearPledge(r); db.save(r);
+  if (act === "pledgeLookup") return pledgeView(db, pledgeByCode());
+  if (act === "pay") {
+    var q = pledgeByCode();
+    if (q.status === "held") fail("This pool isn't full yet. You'll be able to pay once it reaches " + money(FEE) + ".");
+    if (q.status === "released") fail("This pledge was released, so there's nothing to pay.");
+    if (q.status === "due") {
+      q.status = "paid"; q.payMethod = String(req.method || "Credit card").slice(0, 40); q.payRef = "SIM-" + rnd(6); q.paidAt = t; P.save(q);
+      var qa = app(q.appId); db.log(qa.appNo, "share paid (simulated)", q.code + " " + money(q.amount) + " " + q.payMethod); syncApp(db, qa);
+      if (qa.status === "paid") db.mail(qa.email, "Your UMass Amherst application fee is covered", "Good news: sponsors have covered your " + money(FEE) + " application fee. Application " + qa.appNo + ".");
+    }
+    return pledgeView(db, q);
+  }
+  if (act === "release") {
+    var r = pledgeByCode();
+    if (r.status === "paid") fail("This pledge is already paid.");
+    if (r.status === "released") return {};
+    releasePledge(db, r, "released by sponsor");
     return {};
   }
-  if (a === "track") {
+  if (act === "track") {
     var no = String(req.appNo || "").trim().toUpperCase();
-    var t = rs.filter(function (x) { return x.appNo === no && lc(x.email) === lc(req.email); })[0];
-    if (!t) fail("No application matches that number and email.");
-    var v = pub(t); v.appNo = t.appNo; v.payMethod = t.status === "paid" ? t.payMethod : "";
-    return v;
+    var ta = A.all().filter(function (x) { return x.appNo === no && lc(x.email) === lc(req.email); })[0];
+    if (!ta) fail("No application matches that number and email.");
+    var tv = pubApp(db, ta); tv.appNo = ta.appNo; return tv;
+  }
+
+  if (act === "commit") {
+    var c2 = cycleOf(t), n = Math.round(num(req.students));
+    if (n < 1 || n > 50) fail("Choose between 1 and 50 students.");
+    if (["every", String(c2), String(c2 + 1)].indexOf(String(req.cycles)) < 0) fail("Choose a cycle.");
+    if (String(req.email || "").indexOf("@") < 0) fail("Add your email so we can send reminders.");
+    if (!req.anon && !String(req.name || "").trim()) fail("Add your name, or choose to stay anonymous.");
+    if (S.all().some(function (s) { return lc(s.email) === lc(req.email) && s.status === "active"; })) fail("You're already signed up with this email. Use your sponsor code to make changes.");
+    var s = { code: "SP-" + rnd(4), createdAt: t, name: String(req.name || "").trim().slice(0, 120), email: String(req.email).trim(), anon: String(!!req.anon),
+      students: n, cycles: String(req.cycles), prefField: String(req.prefField || "").trim().slice(0, 80), prefCountry: COUNTRIES.indexOf(req.prefCountry) >= 0 ? req.prefCountry : "", status: "active", reminded: "" };
+    S.add(s); db.log("", "sponsor signed up", s.code + " " + n + " students, cycle " + s.cycles);
+    db.mail(s.email, "You're a committed sponsor: " + s.code, "Thank you for committing to cover " + n + " student" + (n > 1 ? "s'" : "'s") + " application fee" + (n > 1 ? "s" : "") + ". We'll remind you when the application season opens (September) and again in December.\n\nYour sponsor code is " + s.code + ". Use it with this email to change or stop your commitment at " + db.site + "#sponsor");
+    return sponsorView(db, s);
+  }
+  if (act === "commitLookup") return sponsorView(db, sponsorByCode());
+  if (act === "commitUpdate") {
+    var u = sponsorByCode(), c3 = cycleOf(t);
+    if (req.stop) { u.status = "stopped"; S.save(u); db.log("", "sponsor stopped", u.code); return sponsorView(db, u); }
+    var n2 = Math.round(num(req.students));
+    if (n2 < 1 || n2 > 50) fail("Choose between 1 and 50 students.");
+    if (["every", String(c3), String(c3 + 1)].indexOf(String(req.cycles)) < 0) fail("Choose a cycle.");
+    u.students = n2; u.cycles = String(req.cycles); u.status = "active"; S.save(u); db.log("", "sponsor updated", u.code + " " + n2 + " students, cycle " + u.cycles);
+    return sponsorView(db, u);
   }
   fail("Unknown action.");
 }
 
-/* Fictional example applicants. */
-function seedRows(now) {
-  var H = 3600e3;
-  function row(o) { var r = {}; COLS.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
-  return [
-    row({ id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
-      statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." }),
-    row({ id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver",
-      status: "pledged", pledgeCode: "PL-H7KQ", sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", pledgedAt: now - 17 * H, releases: 1,
-      statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." }),
-    row({ id: "kwame001", appNo: "FB-26-4102", createdAt: now - 120 * H, name: "Kwame Mensah", email: "kwame@example.com", umassId: "UMA-117950", country: "Ghana", field: "Machine learning", program: "Computer Science", level: "PhD", deadline: "2026-12-15", waiver: "Doesn't qualify for a waiver",
-      status: "paid", pledgeCode: "PL-R2MX", sponsorName: "", sponsorEmail: "anon@example.com", sponsorAnon: "true", pledgedAt: now - 50 * H, payMethod: "Credit card", payRef: "SIM-7F3K2Q", paidAt: now - 49 * H, releases: 0,
-      statement: "Speech recognition works well in English and poorly in Twi, Ewe, Ga and most other Ghanaian languages. I want to build models that learn from small amounts of recorded speech, so a language with a few hundred hours of audio can still get a usable system.\n\nAt my current job in Accra I helped collect a Twi speech dataset with a nonprofit, and saw that good data mattered more than model size. At UMass I'd like to work on self-supervised learning and careful dataset design for low-resource languages, and release open models for health hotlines and farm advisory services." }),
-    row({ id: "fatou001", appNo: "FB-26-4140", createdAt: now - 70 * H, name: "Fatou Diallo", email: "fatou@example.com", umassId: "UMA-118512", country: "Senegal", field: "Public health", program: "Community Health Education: Public Health", level: "PhD", deadline: "2026-11-15", waiver: "Waiver request was declined", status: "open", releases: 0,
-      statement: "In rural Senegal, many women give birth without a skilled attendant because the nearest clinic is hours away. I worked for two years as a field coordinator for a maternal health program in the Kolda region, tracking which women reached care and which did not.\n\nAt UMass I want to study how travel time, cost and trust in clinics combine to keep women from care, and design interventions the regional health authority can afford.\n\nI'm the first in my family to apply to a PhD." }),
-    row({ id: "tendai01", appNo: "FB-26-4144", createdAt: now - 60 * H, name: "Tendai Moyo", email: "tendai@example.com", umassId: "UMA-118640", country: "Zimbabwe", field: "Polymer science", program: "Polymer Science and Engineering", level: "MS/PhD", deadline: "2026-12-05", waiver: "Doesn't qualify for a waiver",
-      status: "pledged", pledgeCode: "PL-9TWB", sponsorName: "", sponsorEmail: "kim@example.com", sponsorAnon: "true", pledgedAt: now - 22.5 * H, releases: 0,
-      statement: "I want to design polymer binders that make sodium-ion batteries last longer. Sodium is cheap and plentiful, which could make grid storage affordable in countries like Zimbabwe, where power cuts are a daily problem, but the electrodes crack and fade quickly.\n\nIn my undergraduate thesis at the University of Zimbabwe I tested three water-based binders and saw one roughly double the cycle life. UMass Amherst's polymer science program is where I most want to take this further.\n\nAfter the PhD I want to help build battery research capacity back home." }),
-  ];
+/* Reminder emails to committed sponsors. Runs daily in Sheet mode. */
+function remind(db) {
+  var t = db.now(), c = cycleOf(t), m = new Date(t).getUTCMonth() + 1, S = db.table("Sponsors");
+  if (!inSeason(t)) return 0;
+  var open = db.table("Applications").all().filter(function (a) { var st = pubApp(db, a).status; return st === "open" || st === "pooling"; }).length, sent = 0;
+  S.all().filter(function (s) { return matchesCycle(s, c); }).forEach(function (s) {
+    var tags = String(s.reminded || "").split(",").filter(String), left = Math.max(0, num(s.students) - usedThisCycle(db, s.email, c));
+    function send(tag, subject, body) { if (tags.indexOf(tag) >= 0 || left <= 0) return; db.mail(s.email, subject, body + "\n\nYour sponsor code is " + s.code + " if you want to change or stop your commitment: " + db.site + "#sponsor"); tags.push(tag); sent++; }
+    send("open-" + c, "Fall " + c + " applications are open", "The UMass Amherst application season is here. You committed to cover " + num(s.students) + " student" + (num(s.students) > 1 ? "s" : "") + "' fees this cycle, and " + open + " applicants are waiting.\n\n" + db.site);
+    if (m === 12 || m === 1) send("dec-" + c, "Many UMass deadlines are in December", "Most PhD deadlines fall in December and early January. " + open + " applicants still need help, and you have " + Math.ceil(left) + " of your " + num(s.students) + " left this cycle.\n\n" + db.site);
+    s.reminded = tags.join(","); S.save(s);
+  });
+  return sent;
+}
+
+/* Fictional example data. */
+function seedData(now) {
+  var H = 3600e3, c = cycleOf(now);
+  function fill(cols, o) { var r = {}; cols.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
+  var apps = [
+    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
+      statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." },
+    { id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 1,
+      statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." },
+    { id: "kwame001", appNo: "FB-26-4102", createdAt: now - 120 * H, name: "Kwame Mensah", email: "kwame@example.com", umassId: "UMA-117950", country: "Ghana", field: "Machine learning", program: "Computer Science", level: "PhD", deadline: "2026-12-15", waiver: "Doesn't qualify for a waiver", status: "paid", paidAt: now - 49 * H, releases: 0,
+      statement: "Speech recognition works well in English and poorly in Twi, Ewe, Ga and most other Ghanaian languages. I want to build models that learn from small amounts of recorded speech, so a language with a few hundred hours of audio can still get a usable system.\n\nAt my current job in Accra I helped collect a Twi speech dataset with a nonprofit, and saw that good data mattered more than model size. At UMass I'd like to work on self-supervised learning and careful dataset design for low-resource languages, and release open models for health hotlines and farm advisory services." },
+    { id: "fatou001", appNo: "FB-26-4140", createdAt: now - 70 * H, name: "Fatou Diallo", email: "fatou@example.com", umassId: "UMA-118512", country: "Senegal", field: "Public health", program: "Community Health Education: Public Health", level: "PhD", deadline: "2026-12-10", waiver: "Waiver request was declined", status: "pooling", releases: 0,
+      statement: "In rural Senegal, many women give birth without a skilled attendant because the nearest clinic is hours away. I worked for two years as a field coordinator for a maternal health program in the Kolda region, tracking which women reached care and which did not.\n\nAt UMass I want to study how travel time, cost and trust in clinics combine to keep women from care, and design interventions the regional health authority can afford.\n\nI'm the first in my family to apply to a PhD." },
+    { id: "tendai01", appNo: "FB-26-4144", createdAt: now - 60 * H, name: "Tendai Moyo", email: "tendai@example.com", umassId: "UMA-118640", country: "Zimbabwe", field: "Polymer science", program: "Polymer Science and Engineering", level: "MS/PhD", deadline: "2026-12-05", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 0,
+      statement: "I want to design polymer binders that make sodium-ion batteries last longer. Sodium is cheap and plentiful, which could make grid storage affordable in countries like Zimbabwe, where power cuts are a daily problem, but the electrodes crack and fade quickly.\n\nIn my undergraduate thesis at the University of Zimbabwe I tested three water-based binders and saw one roughly double the cycle life. UMass Amherst's polymer science program is where I most want to take this further.\n\nAfter the PhD I want to help build battery research capacity back home." },
+    { id: "yonas001", appNo: "FB-26-4151", createdAt: now - 30 * H, name: "Yonas Bekele", email: "yonas@example.com", umassId: "UMA-118802", country: "Ethiopia", field: "Applied mathematics", program: "Mathematics", level: "PhD", deadline: "2026-12-12", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
+      statement: "I want to use mathematical models to plan where new health posts should go in rural Ethiopia, so that more people live within a two-hour walk of basic care.\n\nAs a lecturer at Bahir Dar University I built a small optimisation model for one zone, using road and population data, and the regional health bureau used it to argue for two new sites.\n\nAt UMass I hope to deepen my training in optimisation and probability, and to work on methods that handle missing and uncertain data, which is the normal situation where I work." },
+    { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0,
+      statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." }
+  ].map(function (o) { return fill(TABLES.Applications, o); });
+  var pledges = [
+    { code: "PL-H7KQ", appId: "wanjiru1", createdAt: now - 17 * H, sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", amount: 90, status: "due", dueAt: now + 7 * H },
+    { code: "PL-R2MX", appId: "kwame001", createdAt: now - 50 * H, sponsorName: "", sponsorEmail: "anon@example.com", sponsorAnon: "true", amount: 90, status: "paid", dueAt: now - 26 * H, payMethod: "Credit card", payRef: "SIM-7F3K2Q", paidAt: now - 49 * H },
+    { code: "PL-4MZT", appId: "fatou001", createdAt: now - 30 * H, sponsorName: "Grace Achieng", sponsorEmail: "grace@example.com", sponsorAnon: "false", amount: 50, status: "held" },
+    { code: "PL-8XQD", appId: "fatou001", createdAt: now - 5 * H, sponsorName: "", sponsorEmail: "sam@example.com", sponsorAnon: "true", amount: 10, status: "held" },
+    { code: "PL-9TWB", appId: "tendai01", createdAt: now - 40 * H, sponsorName: "", sponsorEmail: "kim@example.com", sponsorAnon: "true", amount: 40, status: "paid", dueAt: now + 1.5 * H, payMethod: "Venmo", payRef: "SIM-Q8D2LM", paidAt: now - 10 * H },
+    { code: "PL-K3VR", appId: "tendai01", createdAt: now - 22.5 * H, sponsorName: "David Okello", sponsorEmail: "david@example.com", sponsorAnon: "false", amount: 50, status: "due", dueAt: now + 1.5 * H },
+    { code: "PL-N5CE", appId: "nadia001", createdAt: now - 12 * H, sponsorName: "", sponsorEmail: "pat@example.com", sponsorAnon: "true", amount: 30, status: "held" }
+  ].map(function (o) { return fill(TABLES.Pledges, o); });
+  var sponsors = [
+    { code: "SP-L3NA", createdAt: now - 200 * H, name: "Lena Brandt", email: "lena@example.com", anon: "false", students: 3, cycles: String(c), status: "active" },
+    { code: "SP-W8OB", createdAt: now - 300 * H, name: "Kofi Owusu", email: "kofi@example.com", anon: "false", students: 2, cycles: "every", status: "active" },
+    { code: "SP-T4XA", createdAt: now - 100 * H, name: "", email: "quiet@example.com", anon: "true", students: 1, cycles: String(c + 1), status: "active" }
+  ].map(function (o) { return fill(TABLES.Sponsors, o); });
+  return { Applications: apps, Pledges: pledges, Sponsors: sponsors };
 }
 
 /* ===== Website ===== */
 var API_URL = (window.FEE_BRIDGE_API || "").trim();
 var REMOTE = !!API_URL;
-var FEE = 90, KEY = "feebridge-v3";
+var KEY = "feebridge-v4";
 const $ = id => document.getElementById(id);
-const fmt = n => "$" + Number(n).toFixed(2);
+const usd = n => "$" + Number(n).toFixed(0);
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const first = n => String(n).split(" ")[0];
-function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3600); }
 function store(k, v) { try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 function recall(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
 
 /* Preview mode keeps its data in this browser and runs the same rules as the Sheet. */
 let L = recall(KEY + "-data");
-function resetLocal() { L = { offset: 0, rows: seedRows(Date.now()), log: [] }; store(KEY + "-data", L); }
+function resetLocal() { L = { offset: 0, t: seedData(Date.now()), log: [], mail: [] }; store(KEY + "-data", L); }
 if (!REMOTE && !L) resetLocal();
+const persist = () => store(KEY + "-data", L);
 const localDb = {
-  all: () => L.rows, now: () => Date.now() + L.offset,
-  save: () => store(KEY + "-data", L), add: o => { L.rows.push(o); store(KEY + "-data", L); },
-  log: (no, ev, d) => { L.log.push([Date.now() + L.offset, no, ev, d]); store(KEY + "-data", L); }
+  table: name => ({ all: () => L.t[name], save: persist, add: o => { L.t[name].push(o); persist(); } }),
+  now: () => Date.now() + L.offset,
+  log: (no, ev, d) => { L.log.push([Date.now() + L.offset, no, ev, d]); persist(); },
+  mail: (to, subject) => { L.mail.push([to, subject]); persist(); },
+  site: location.href.split("#")[0]
 };
 let skew = 0;
 const clock = () => REMOTE ? Date.now() + skew : Date.now() + L.offset;
@@ -363,163 +577,213 @@ async function call(req) {
   return j;
 }
 
-let students = [], loaded = false, loadError = "";
-let my = recall(KEY + "-pledge");      // { code, email } for this sponsor
-let myView = null;                     // full sponsor view of that pledge
-let expanded = null, pledgeFormFor = null, busy = false, track = null;
+let data = { students: [], promised: 0, cycle: 0 }, loaded = false, loadError = "";
+let mine = recall(KEY + "-pledges") || [];   // [{ code, email }] for this sponsor's pledges
+let views = {};                              // code -> pledge view
+let expanded = null, formFor = null, amountPick = null, busy = false, track = null;
+const saveMine = () => store(KEY + "-pledges", mine);
 
 async function refresh() {
   try {
     const r = await call({ action: "list" });
-    students = r.students; if (REMOTE) skew = r.now - Date.now(); loaded = true; loadError = "";
-    if (my) {
-      try { myView = await call({ action: "sponsor", code: my.code, email: my.email }); }
-      catch { myView = null; my = null; store(KEY + "-pledge"); }
+    data = r; if (REMOTE) skew = r.now - Date.now(); loaded = true; loadError = "";
+    const keep = [];
+    for (const m of mine) {
+      try { const v = await call({ action: "pledgeLookup", code: m.code, email: m.email }); if (v.status !== "released") { views[m.code] = v; keep.push(m); } else delete views[m.code]; }
+      catch { delete views[m.code]; }
     }
+    mine = keep; saveMine();
   } catch (e) { loadError = e.message; }
   fillFilters(); renderBoard();
   if (track && !$("view-track").hidden) lookupTrack(track.appNo, track.email, true);
 }
 
-function remaining(at) {
-  const ms = Math.max(0, at + 24 * 3600e3 - clock()), h = Math.floor(ms / 3600e3), m = Math.floor(ms % 3600e3 / 60e3);
-  return `${h}h ${String(m).padStart(2, "0")}m`;
+function left(at) {
+  const ms = Math.max(0, at - clock()), d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 3600e3), m = Math.floor(ms % 3600e3 / 60e3);
+  return d ? `${d}d ${h}h` : `${h}h ${String(m).padStart(2, "0")}m`;
 }
 const daysLeft = d => Math.ceil((new Date(d + "T23:59:59") - clock()) / 864e5);
-const who = s => s.sponsorAnon ? "an anonymous sponsor" : s.sponsor;
-const pill = s => s.status === "open" ? `<span class="pill open">Needs a sponsor</span>` : s.status === "pledged" ? `<span class="pill pledged">Pledged</span>` : `<span class="pill paid">Paid</span>`;
+const STATUS = { open: ["open", "Needs a sponsor"], pooling: ["pool", ""], funding: ["pledged", "Fully pledged"], paid: ["paid", "Paid"] };
+const pill = s => `<span class="pill ${STATUS[s.status][0]}">${s.status === "pooling" ? `${usd(s.pool.committed)} of ${usd(FEE)}` : STATUS[s.status][1]}</span>`;
+const bar = s => s.pool.committed ? `<div class="bar" role="img" aria-label="${usd(s.pool.paid)} paid and ${usd(s.pool.committed - s.pool.paid)} pledged of ${usd(FEE)}"><span class="b-paid" style="width:${s.pool.paid / FEE * 100}%"></span><span class="b-pledged" style="width:${(s.pool.committed - s.pool.paid) / FEE * 100}%"></span></div>` : "";
+const names = list => { const named = list.filter(c => c.name).map(c => c.name), anon = list.length - named.length;
+  const parts = [...named]; if (anon) parts.push(anon === 1 ? (named.length ? "1 anonymous sponsor" : "an anonymous sponsor") : `${anon} anonymous sponsors`);
+  return parts.length > 1 ? parts.slice(0, -1).join(", ") + " and " + parts.at(-1) : parts[0] || ""; };
+const myOn = id => Object.values(views).find(v => v.app && v.app.id === id);
 
 function fillFilters() {
   for (const [id, key] of [["f-field", "field"], ["f-country", "country"]]) {
-    const sel = $(id), cur = sel.value, vals = [...new Set(students.map(s => s[key]))].sort();
+    const sel = $(id), cur = sel.value, vals = [...new Set(data.students.map(s => s[key]))].sort();
     sel.length = 1; vals.forEach(v => sel.add(new Option(v, v))); sel.value = cur;
   }
 }
 
 function renderBoard() {
   if (!loaded) { $("cards").innerHTML = `<p class="lede">${loadError ? esc(loadError) : "Loading applicants…"}</p>`; $("stats").innerHTML = ""; return; }
-  const open = students.filter(s => s.status === "open");
+  const S = data.students, need = S.filter(s => s.status === "open" || s.status === "pooling");
   $("stats").innerHTML = `
-    <div><b>${open.length}</b>fees need a sponsor</div>
-    <div><b>${fmt(open.length * FEE)}</b>still needed</div>
-    <div><b>${students.filter(s => s.status === "pledged").length}</b>on a 24-hour hold</div>
-    <div><b>${students.filter(s => s.status === "paid").length}</b>paid</div>`;
-  $("mine").innerHTML = myView && myView.status === "pledged"
-    ? `<div class="panel"><p>You're holding <b>${esc(first(myView.name))}</b>'s fee. Pledge code <b class="mono">${esc(myView.code)}</b>, <span class="timer">${remaining(myView.pledgedAt)}</span> left.</p>
-       <div class="actions"><button data-act="pay">Pay now</button><button class="ghost" data-act="release">Release pledge</button><button class="ghost" data-act="forget">Not me</button></div></div>` : "";
+    <div><b>${need.length}</b>fees still need sponsors</div>
+    <div><b>${usd(need.reduce((a, s) => a + s.pool.left, 0))}</b>still needed</div>
+    <div><b>${S.filter(s => s.status === "pooling").length}</b>pools filling</div>
+    <div><b>${S.filter(s => s.status === "paid").length}</b>paid</div>
+    ${data.promised ? `<div><b>${data.promised}</b>more fees promised by committed sponsors for Fall ${data.cycle}</div>` : ""}`;
+
+  const mineList = Object.values(views);
+  $("mine").innerHTML = mineList.length ? `<h2 class="h3">Your pledges</h2>` + mineList.map(v => `
+    <div class="panel mine-row">
+      <p><b>${usd(v.amount)}</b> toward <b>${esc(v.app.name)}</b>'s fee · code <b class="mono">${esc(v.code)}</b></p>
+      ${v.status === "held" ? `<p class="hint">Waiting for the pool to fill: ${usd(v.app.pool.left)} left. If it doesn't fill within <span class="timer">${left(v.app.pool.endsAt)}</span>, your pledge is released and nothing is charged.</p>
+        <div class="actions"><button class="ghost" data-act="release" data-code="${v.code}">Release pledge</button></div>`
+      : v.status === "due" ? `<p class="hint">The fee is fully pledged. Pay your share within <span class="timer">${left(v.dueAt)}</span>.</p>
+        <div class="actions"><button data-act="pay" data-code="${v.code}">Pay now</button><button class="ghost" data-act="release" data-code="${v.code}">Release pledge</button></div>`
+      : `<p class="hint">Paid by ${esc(String(v.payMethod).toLowerCase())}. Receipt <span class="mono">${esc(v.payRef)}</span>.</p>
+        <div class="actions"><button class="ghost" data-act="forget" data-code="${v.code}">Hide</button></div>`}
+    </div>`).join("") : "";
+
+  const pools = S.filter(s => s.status === "pooling").sort((a, b) => a.pool.left - b.pool.left);
+  $("pools").innerHTML = pools.length ? `<h2 class="h3">Pools waiting to fill</h2><div class="pool-list">` + pools.map(s => `
+    <button class="pool-row" data-act="chip" data-id="${s.id}">
+      <span class="pool-who"><b>${esc(s.name)}</b><span class="meta">${esc(s.level)}, ${esc(s.program)}</span></span>
+      ${bar(s)}<span class="pool-left"><b>${usd(s.pool.left)}</b> left</span>
+    </button>`).join("") + `</div>` : "";
+
   const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value;
-  const list = students.filter(s => (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
-    .sort((a, b) => (a.status === "paid") - (b.status === "paid") || new Date(a.deadline) - new Date(b.deadline));
-  $("cards").innerHTML = list.length ? list.map(card).join("") : `<p class="lede">${students.length ? "No applicants match these filters." : "No applications yet. Once someone applies, they'll appear here."}</p>`;
-  const paid = students.filter(s => s.status === "paid");
-  $("thanks").innerHTML = paid.length ? paid.map(s => `<div><b>${esc(s.sponsorAnon ? "An anonymous sponsor" : s.sponsor)}</b> covered ${esc(first(s.name))}'s fee for ${esc(s.program)}</div>`).join("") : `<p class="hint">Paid fees will be listed here.</p>`;
+  const order = { pooling: 0, open: 1, funding: 2, paid: 3 };
+  const list = S.filter(s => (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
+    .sort((a, b) => order[a.status] - order[b.status] || new Date(a.deadline) - new Date(b.deadline));
+  $("cards").innerHTML = list.length ? list.map(card).join("") : `<p class="lede">${S.length ? "No applicants match these filters." : "No applications yet. Once someone applies, they'll appear here."}</p>`;
+
+  const paid = S.filter(s => s.status === "paid");
+  $("thanks").innerHTML = paid.length ? paid.map(s => `<div><b>${esc(names(s.pool.contributors).replace(/^an/, "An"))}</b> covered ${esc(first(s.name))}'s fee for ${esc(s.program)}</div>`).join("") : `<p class="hint">Paid fees will be listed here.</p>`;
+}
+
+function amountChoices(s) {
+  const l = s.pool.left, opts = [];
+  if (l === FEE) opts.push([FEE, "Full fee"]); else opts.push([l, "The rest"]);
+  [50, 30, 10].forEach(a => { if (a < l && !opts.some(o => o[0] === a)) opts.push([a, ""]); });
+  return opts;
 }
 
 function card(s) {
-  const d = daysLeft(s.deadline), isOpen = expanded === s.id, mineHere = myView && myView.id === s.id;
+  const d = daysLeft(s.deadline), isOpen = expanded === s.id, my = myOn(s.id);
   const due = d < 0 ? "Deadline passed" : d <= 14 ? `<span class="urgent">Due in ${d} day${d === 1 ? "" : "s"}</span>` : `Due ${new Date(s.deadline + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
   let body = "";
   if (isOpen) {
     let action = "";
-    if (s.status === "open" && pledgeFormFor !== s.id) action = `<div class="actions"><button data-act="pledge" data-id="${s.id}">Pledge to cover ${fmt(FEE)}</button><span class="hint">Holds this fee for you for 24 hours</span></div>`;
-    else if (s.status === "open") action = `
+    const canPledge = (s.status === "open" || s.status === "pooling") && !my;
+    if (canPledge && formFor !== s.id) action = `<div class="actions">
+        <button data-act="form" data-id="${s.id}" data-amt="${s.pool.left}">${s.pool.left === FEE ? `Cover the full ${usd(FEE)}` : `Cover the last ${usd(s.pool.left)}`}</button>
+        <button class="ghost" data-act="form" data-id="${s.id}" data-amt="">Chip in part</button></div>`;
+    else if (canPledge) {
+      const opts = amountChoices(s), pick = amountPick ?? opts[0][0];
+      action = `
       <div class="panel">
+        <div class="field"><span class="lbl">How much?</span>
+          <div class="chips" role="group" aria-label="Amount">${opts.map(([a, l]) => `<button type="button" class="chip${pick === a ? " on" : ""}" data-act="amt" data-amt="${a}">${usd(a)}${l ? ` <small>${l}</small>` : ""}</button>`).join("")}
+            <label class="custom">Other $<input id="p-amt" type="number" min="${MIN_SHARE}" max="${s.pool.left}" inputmode="numeric" value="${opts.some(o => o[0] === pick) ? "" : pick}" aria-label="Other amount"></label></div>
+          <span class="hint">${usd(s.pool.left)} left on this fee. Smallest share is ${usd(MIN_SHARE)}.</span></div>
         <div class="grid2">
           <div class="field"><label for="p-name">Your name</label><input id="p-name" placeholder="e.g. Sam Mwangi" autocomplete="name"></div>
           <div class="field"><label for="p-email">Your email <span class="hint">(private)</span></label><input id="p-email" type="email" autocomplete="email"></div>
         </div>
         <div class="radio-row"><label><input type="radio" name="p-anon" id="p-anon-no" checked> Show my name</label><label><input type="radio" name="p-anon" id="p-anon-yes"> Stay anonymous</label></div>
-        <p class="hint">You'll get a pledge code and have 24 hours to pay ${fmt(FEE)}. If you don't, the pledge is released and ${esc(first(s.name))} goes back on the board. You can hold one pledge at a time.</p>
+        <p class="hint">You'll get a pledge code. Nobody pays until the fee is fully pledged; then everyone has 24 hours to pay their share. If the pool doesn't fill within 7 days, pledges are released.</p>
         <p class="err" id="p-err" hidden></p>
         <div class="actions"><button data-act="confirm" data-id="${s.id}">Confirm pledge</button><button class="ghost" data-act="cancel">Cancel</button></div>
       </div>`;
-    else if (s.status === "pledged" && mineHere) action = `
-      <div class="panel">
-        <p>Your pledge code is <b class="mono">${esc(myView.code)}</b>. Save it with your email to come back later. Your hold expires in <span class="timer">${remaining(myView.pledgedAt)}</span>.</p>
-        <dl class="kv"><dt>Application no.</dt><dd>${esc(myView.appNo)}</dd><dt>UMass applicant ID</dt><dd>${esc(myView.umassId)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
-        <div class="actions"><button data-act="pay">Pay now</button><button class="ghost" data-act="release">Release pledge</button></div>
-      </div>`;
-    else if (s.status === "pledged") action = `<div class="sponsor-line">Held by ${esc(who(s))} for another <span class="timer">${remaining(s.pledgedAt)}</span>. If they don't pay, it opens up again.</div>`;
-    else action = `<div class="sponsor-line">Paid by ${esc(who(s))} · receipt ${esc(s.payRef)}</div>`;
-    const hist = s.releases ? `<div class="history">${s.releases} earlier pledge${s.releases > 1 ? "s" : ""} released without payment</div>` : "";
-    body = `<div class="detail" id="detail-${s.id}"><p class="statement">${esc(s.statement)}</p><span class="wc">${(s.statement.match(/\S+/g) || []).length} words${s.waiver ? " · " + esc(s.waiver) : ""}</span>${action}${hist}</div>`;
+    } else if (my) action = `<div class="sponsor-line">You pledged ${usd(my.amount)} (code <span class="mono">${esc(my.code)}</span>). See "Your pledges" above.</div>`;
+    else if (s.status === "funding") action = `<div class="sponsor-line">Fully pledged. Waiting for ${s.pool.contributors.filter(c => c.status === "due").length} share(s) to be paid within <span class="timer">${left(s.pool.dueBy)}</span>. If someone doesn't pay, their part opens up again.</div>`;
+    else if (s.status === "paid") action = `<div class="sponsor-line">Paid by ${esc(names(s.pool.contributors))}.</div>`;
+    const who = s.pool.contributors.length ? `<div class="contrib">${s.pool.contributors.map(c => `<span>${esc(c.name || "Anonymous")} <b>${usd(c.amount)}</b>${c.status === "paid" ? " ✓" : ""}</span>`).join("")}</div>` : "";
+    const pend = s.status === "pooling" ? `<div class="hint">Pool closes in <span class="timer">${left(s.pool.endsAt)}</span> if it doesn't fill.</div>` : "";
+    const hist = s.releases ? `<div class="history">${s.releases} earlier pledge${s.releases > 1 ? "s" : ""} released</div>` : "";
+    body = `<div class="detail" id="detail-${s.id}"><p class="statement">${esc(s.statement)}</p><span class="wc">${wordCount(s.statement)} words${s.waiver ? " · " + esc(s.waiver) : ""}</span>${who}${pend}${action}${hist}</div>`;
   }
-  return `<article class="card">
+  return `<article class="card" id="card-${s.id}">
     <button class="card-btn" data-act="toggle" data-id="${s.id}" aria-expanded="${isOpen}" aria-controls="detail-${s.id}">
       <div><div class="who">${esc(s.name)}</div>
         <div class="meta">From ${esc(s.country)} · ${esc(s.level)}, ${esc(s.program)} · ${due}</div>
         <span class="tag">${esc(s.field)}</span></div>
-      <div class="side"><span class="fee">${fmt(FEE)}</span>${pill(s)}</div>
+      <div class="side"><span class="fee">${usd(FEE)}</span>${pill(s)}</div>
+      ${bar(s) ? `<div class="bar-row">${bar(s)}</div>` : ""}
       ${isOpen ? "" : `<p class="excerpt">${esc(s.statement)}</p><span class="more">Read full statement</span>`}
     </button>${body}</article>`;
 }
 
 async function act(fn) { if (busy) return; busy = true; document.body.classList.add("busy"); try { await fn(); } catch (e) { toast(e.message); } finally { busy = false; document.body.classList.remove("busy"); } }
 
-document.querySelector("#view-board").addEventListener("click", e => {
+$("view-board").addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
-  const a = b.dataset.act, id = b.dataset.id;
-  if (a === "toggle") { expanded = expanded === id ? null : id; pledgeFormFor = null; return renderBoard(); }
-  if (a === "pledge") { pledgeFormFor = id; renderBoard(); return $("p-name").focus(); }
-  if (a === "cancel") { pledgeFormFor = null; return renderBoard(); }
-  if (a === "forget") { my = null; myView = null; store(KEY + "-pledge"); return renderBoard(); }
-  if (a === "pay") return openCheckout();
+  const a = b.dataset.act, id = b.dataset.id, code = b.dataset.code;
+  if (a === "toggle") { expanded = expanded === id ? null : id; formFor = null; return renderBoard(); }
+  if (a === "chip") { expanded = id; formFor = id; amountPick = null; renderBoard(); $("card-" + id).scrollIntoView({ block: "start", behavior: "smooth" }); return; }
+  if (a === "form") { formFor = id; amountPick = b.dataset.amt ? Number(b.dataset.amt) : null; renderBoard(); return $("p-name").focus(); }
+  if (a === "amt") { const keep = [$("p-name").value, $("p-email").value, $("p-anon-yes").checked]; amountPick = Number(b.dataset.amt); renderBoard(); $("p-name").value = keep[0]; $("p-email").value = keep[1]; $("p-anon-yes").checked = keep[2]; return; }
+  if (a === "cancel") { formFor = null; return renderBoard(); }
+  if (a === "forget") { mine = mine.filter(m => m.code !== code); delete views[code]; saveMine(); return renderBoard(); }
+  if (a === "pay") return openCheckout(views[code]);
   if (a === "confirm") return act(async () => {
+    const s = data.students.find(x => x.id === id), custom = Number($("p-amt").value);
+    const amount = custom || amountPick || amountChoices(s)[0][0];
     const name = $("p-name").value.trim(), email = $("p-email").value.trim(), anon = $("p-anon-yes").checked;
-    try { myView = await call({ action: "pledge", id, name, email, anon }); }
+    let v; try { v = await call({ action: "pledge", id, amount, name, email, anon }); }
     catch (err) { const p = $("p-err"); p.textContent = err.message; p.hidden = false; return; }
-    my = { code: myView.code, email }; store(KEY + "-pledge", my); pledgeFormFor = null; expanded = id;
-    toast(`Pledged. Your code is ${myView.code}. You have 24 hours to pay.`);
-    await refresh();
+    mine.push({ code: v.code, email }); saveMine(); views[v.code] = v; formFor = null; amountPick = null;
+    toast(v.status === "due" ? `Pledged. Your code is ${v.code}. The fee is fully pledged, so please pay within 24 hours.` : `Pledged ${usd(v.amount)}. Your code is ${v.code}. We'll tell you when the pool is full.`);
+    await refresh(); window.scrollTo({ top: $("mine").offsetTop - 12, behavior: "smooth" });
   });
   if (a === "release") return act(async () => {
-    await call({ action: "release", code: my.code, email: my.email });
-    my = null; myView = null; store(KEY + "-pledge"); toast("Pledge released. The fee is open again."); await refresh();
+    const m = mine.find(x => x.code === code);
+    await call({ action: "release", code, email: m.email });
+    mine = mine.filter(x => x.code !== code); delete views[code]; saveMine(); toast("Pledge released. That amount is open again."); await refresh();
   });
 });
 ["f-field", "f-country", "f-status"].forEach(id => $(id).addEventListener("change", renderBoard));
+$("view-board").addEventListener("input", e => { if (e.target.id === "p-amt") document.querySelectorAll(".chip").forEach(c => c.classList.remove("on")); });
 
 $("code-form").addEventListener("submit", e => {
   e.preventDefault();
   act(async () => {
     const code = $("c-code").value.trim().toUpperCase(), email = $("c-email").value.trim();
-    try { myView = await call({ action: "sponsor", code, email }); }
+    let v; try { v = await call({ action: "pledgeLookup", code, email }); }
     catch (err) { const p = $("c-err"); p.textContent = err.message; p.hidden = false; return; }
-    $("c-err").hidden = true; my = { code, email }; store(KEY + "-pledge", my); expanded = myView.id;
+    $("c-err").hidden = true;
+    if (v.status === "released") { const p = $("c-err"); p.textContent = "That pledge was released, so there's nothing to pay."; p.hidden = false; return; }
+    if (!mine.some(m => m.code === code)) mine.push({ code, email }); saveMine(); views[code] = v;
     $("code-box").open = false; await refresh();
-    if (myView && myView.status === "paid") toast(`This pledge is already paid. Receipt ${myView.payRef}.`);
   });
 });
 
 /* Simulated checkout */
 let co = null;
-function openCheckout() { if (!myView) return; co = { step: "method" }; $("scrim").hidden = false; drawCheckout(); }
+function openCheckout(v) { if (!v) return; co = { step: "method", v }; $("scrim").hidden = false; drawCheckout(); }
 function closeCheckout() { $("scrim").hidden = true; co = null; refresh(); }
 function drawCheckout() {
-  const m = $("modal"), s = myView;
-  const head = `<div class="label-row"><h3 id="m-title">${co.step === "done" ? "Payment complete" : "Pay UMass Amherst application fee"}</h3><button class="ghost" data-m="close" aria-label="Close" style="padding:2px 10px">×</button></div>`;
+  const m = $("modal"), v = co.v, s = v.app;
+  const head = `<div class="label-row"><h3 id="m-title">${co.step === "done" ? "Payment complete" : "Pay your share"}</h3><button class="ghost" data-m="close" aria-label="Close" style="padding:2px 10px">×</button></div>`;
+  const share = v.amount < FEE ? `<p class="hint" style="margin:0">Your ${usd(v.amount)} goes to the PhD Fee Bridge pool account. When every share is in, the organiser pays the ${usd(FEE)} fee to UMass Amherst.</p>` : "";
   if (co.step === "method") m.innerHTML = `${head}
-    <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(s.appNo)}</dd><dt>Program</dt><dd>${esc(s.level)}, ${esc(s.program)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
+    <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(v.appNo)}</dd><dt>Program</dt><dd>${esc(s.level)}, ${esc(s.program)}</dd><dt>Your share</dt><dd>${usd(v.amount)} of ${usd(FEE)}</dd></dl>${share}
     <div class="methods">
       <button class="method" data-m="card" data-v="Credit card">Credit card <small>Accepted by UMass</small></button>
       <button class="method" data-m="card" data-v="Debit card">Debit card <small>Card network</small></button>
       <button class="method" data-m="wallet" data-v="PayPal">PayPal <small>Simulated</small></button>
       <button class="method" data-m="wallet" data-v="Venmo">Venmo <small>Simulated</small></button>
     </div>
-    <p class="sim">Simulation. UMass's own portal takes credit cards only. No card details are stored and nothing is charged.</p>`;
+    <p class="sim">Simulation. No card details are stored and nothing is charged.</p>`;
   else if (co.step === "card") m.innerHTML = `${head}
     <div class="field"><label for="k-num">Card number</label><input id="k-num" inputmode="numeric" value="4242 4242 4242 4242"></div>
     <div class="grid2" style="grid-template-columns:1fr 1fr"><div class="field"><label for="k-exp">Expiry</label><input id="k-exp" value="12/29"></div><div class="field"><label for="k-cvc">CVC</label><input id="k-cvc" value="123"></div></div>
     <p class="sim">Test card filled in. Don't enter a real card. Nothing you type here is sent anywhere.</p>
-    <div class="actions"><button data-m="submit">Pay ${fmt(FEE)}</button><button class="ghost" data-m="back">Back</button></div>`;
+    <div class="actions"><button data-m="submit">Pay ${usd(v.amount)}</button><button class="ghost" data-m="back">Back</button></div>`;
   else if (co.step === "wallet") m.innerHTML = `${head}
-    <p style="margin:0">You'd now be sent to ${esc(co.method)} to approve ${fmt(FEE)}.</p>
+    <p style="margin:0">You'd now be sent to ${esc(co.method)} to approve ${usd(v.amount)}.</p>
     <p class="sim">Simulated. In the demo, approving completes the payment straight away.</p>
     <div class="actions"><button data-m="submit">Approve in ${esc(co.method)}</button><button class="ghost" data-m="back">Back</button></div>`;
   else if (co.step === "processing") m.innerHTML = `${head}<div class="spinner" role="status" aria-label="Processing"></div><p class="hint" style="text-align:center;margin:0">Processing payment…</p>`;
   else m.innerHTML = `${head}
-    <p style="margin:0">${esc(first(s.name))}'s fee is marked as paid. Save this receipt.</p>
-    <dl class="kv"><dt>Receipt</dt><dd>${esc(s.payRef)}</dd><dt>Application no.</dt><dd>${esc(s.appNo)}</dd><dt>UMass applicant ID</dt><dd>${esc(s.umassId)}</dd><dt>Method</dt><dd>${esc(s.payMethod)}</dd><dt>Amount</dt><dd>${fmt(FEE)}</dd></dl>
+    <p style="margin:0">${v.app.status === "paid" ? `That completes ${esc(first(s.name))}'s fee. Thank you.` : `Your share is in. ${esc(first(s.name))}'s fee is marked paid once every share is in.`}</p>
+    <dl class="kv"><dt>Receipt</dt><dd>${esc(v.payRef)}</dd><dt>Application no.</dt><dd>${esc(v.appNo)}</dd><dt>UMass applicant ID</dt><dd>${esc(v.umassId)}</dd><dt>Method</dt><dd>${esc(v.payMethod)}</dd><dt>Amount</dt><dd>${usd(v.amount)}</dd></dl>
     <div class="actions"><button data-m="close">Done</button></div>`;
   m.querySelector("button")?.focus();
 }
@@ -530,11 +794,11 @@ $("modal").addEventListener("click", async e => {
   if (a === "card" || a === "wallet") { co.step = a; co.method = b.dataset.v; }
   if (a === "submit") {
     co.step = "processing"; drawCheckout();
-    const started = Date.now();
-    try { myView = await call({ action: "pay", code: my.code, email: my.email, method: co.method }); }
+    const started = Date.now(), m = mine.find(x => x.code === co.v.code);
+    try { co.v = await call({ action: "pay", code: co.v.code, email: m.email, method: co.method }); views[co.v.code] = co.v; }
     catch (err) { co.step = "method"; drawCheckout(); return toast(err.message); }
     await new Promise(r => setTimeout(r, Math.max(0, 1200 - (Date.now() - started))));
-    my = null; store(KEY + "-pledge"); co.step = "done";
+    co.step = "done";
   }
   drawCheckout();
 });
@@ -543,7 +807,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && co && co.s
 
 /* Apply */
 PROGRAMS.forEach(([n]) => $("a-program").add(new Option(n, n)));
-COUNTRIES.forEach(c => $("a-country").add(new Option(c, c)));
+COUNTRIES.forEach(c => { $("a-country").add(new Option(c, c)); $("s-country").add(new Option(c, c)); });
 $("a-program").addEventListener("change", () => {
   const p = PROGRAMS.find(([n]) => n === $("a-program").value), sel = $("a-level");
   sel.length = 0;
@@ -565,15 +829,64 @@ $("apply-form").addEventListener("submit", e => {
   if (!wv) return fail("Tell us about the fee waiver: either you don't qualify, or your request was declined.", "a-waiver-none");
   err.hidden = true;
   act(async () => {
-    const data = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value };
-    let r; try { r = await call({ action: "apply", data }); } catch (er) { return fail(er.message); }
+    const d = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value };
+    let r; try { r = await call({ action: "apply", data: d }); } catch (er) { return fail(er.message); }
     $("done-no").textContent = r.appNo; $("apply-form").hidden = true; $("apply-done").hidden = false;
-    $("t-no").value = r.appNo; $("t-email").value = data.email;
+    $("t-no").value = r.appNo; $("t-email").value = d.email;
     e.target.reset(); $("a-wc").textContent = "0 / 150 words"; $("a-program").dispatchEvent(new Event("change"));
     refresh();
   });
 });
 $("done-again").addEventListener("click", () => { $("apply-form").hidden = false; $("apply-done").hidden = true; });
+
+/* Committed sponsors */
+function cycleOptions(sel, c, cur) {
+  sel.length = 0;
+  [[String(c), `This cycle (Fall ${c} entry, applications Sep ${c - 1} to Jan ${c})`], [String(c + 1), `Next cycle (Fall ${c + 1} entry)`], ["every", "Every cycle until I stop"]]
+    .forEach(([v, l]) => sel.add(new Option(l, v)));
+  if (cur) sel.value = cur;
+}
+let commitCtx = null, commitEmail = "";
+function renderCommitment(s) {
+  $("commit-result").innerHTML = `<div class="box" style="margin-top:14px">
+    <div class="label-row"><div class="who">${esc(s.anon ? "Anonymous sponsor" : s.name)}</div><span class="pill ${s.status === "active" ? "paid" : "open"}">${s.status === "active" ? "Active" : "Stopped"}</span></div>
+    <p style="margin:0">Sponsor code <b class="mono">${esc(s.code)}</b>. ${s.countsThisCycle ? `This cycle (Fall ${s.cycle}) you've covered <b>${s.used}</b> of your <b>${s.students}</b> student${s.students > 1 ? "s" : ""}.` : s.status === "active" ? `Your commitment starts with the Fall ${s.cycles === "every" ? s.cycle : s.cycles} cycle.` : "You won't get any more reminders."}</p>
+    <div class="grid2">
+      <div class="field"><label for="m-students">Students per cycle</label><input id="m-students" type="number" min="1" max="50" value="${s.students}"></div>
+      <div class="field"><label for="m-cycles">Which cycle</label><select id="m-cycles"></select></div>
+    </div>
+    <div class="actions"><button data-c="save">Save changes</button>${s.status === "active" ? `<button class="ghost" data-c="stop">Stop my commitment</button>` : ""}</div>
+  </div>`;
+  cycleOptions($("m-cycles"), s.cycle, s.cycles);
+  commitCtx = s;
+}
+$("commit-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const err = $("s-err");
+  act(async () => {
+    let s; try {
+      s = await call({ action: "commit", name: $("s-name").value, email: $("s-email").value, anon: $("s-anon-yes").checked, students: $("s-students").value, cycles: $("s-cycles").value, prefField: $("s-field").value, prefCountry: $("s-country").value });
+    } catch (er) { err.textContent = er.message; err.hidden = false; return; }
+    err.hidden = true; commitEmail = $("s-email").value.trim(); e.target.reset(); cycleOptions($("s-cycles"), cycleOf(clock()));
+    renderCommitment(s); toast(`Signed up. Your sponsor code is ${s.code}.`); refresh();
+  });
+});
+$("manage-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const err = $("mg-err");
+  act(async () => {
+    let s; try { s = await call({ action: "commitLookup", code: $("mg-code").value, email: $("mg-email").value }); }
+    catch (er) { err.textContent = er.message; err.hidden = false; return; }
+    err.hidden = true; commitEmail = $("mg-email").value.trim(); renderCommitment(s);
+  });
+});
+$("commit-result").addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b || !commitCtx) return;
+  act(async () => {
+    const s = await call({ action: "commitUpdate", code: commitCtx.code, email: commitEmail, stop: b.dataset.c === "stop", students: $("m-students").value, cycles: $("m-cycles").value });
+    renderCommitment(s); toast(b.dataset.c === "stop" ? "Commitment stopped. You won't get more reminders." : "Saved."); refresh();
+  });
+});
 
 /* Track */
 async function lookupTrack(appNo, email, quiet) {
@@ -581,33 +894,38 @@ async function lookupTrack(appNo, email, quiet) {
   try { s = await call({ action: "track", appNo, email }); }
   catch (e) { if (!quiet) { err.textContent = e.message; err.hidden = false; $("track-result").innerHTML = ""; } return; }
   err.hidden = true; track = { appNo, email };
-  const steps = [["Submitted", true], ["Pledged by a sponsor", s.status !== "open"], ["Fee paid to UMass", s.status === "paid"]];
-  const status = s.status === "open" ? "Waiting for a sponsor." : s.status === "pledged" ? `${esc(s.sponsorAnon ? "An anonymous sponsor" : s.sponsor)} pledged. They have <span class="timer">${remaining(s.pledgedAt)}</span> left to pay.` : `Paid by ${esc(s.sponsorAnon ? "an anonymous sponsor" : s.sponsor)} by ${esc(String(s.payMethod).toLowerCase())}. Receipt ${esc(s.payRef)}.`;
+  const steps = [["Submitted", true], ["Fully pledged by sponsors", s.status === "funding" || s.status === "paid"], ["Fee paid", s.status === "paid"]];
+  const status = s.status === "open" ? "Waiting for a sponsor."
+    : s.status === "pooling" ? `${usd(s.pool.committed)} of ${usd(FEE)} pledged by ${esc(names(s.pool.contributors))}. ${usd(s.pool.left)} to go.`
+    : s.status === "funding" ? `Fully pledged by ${esc(names(s.pool.contributors))}. ${usd(s.pool.paid)} paid so far.`
+    : `Paid by ${esc(names(s.pool.contributors))}.`;
   $("track-result").innerHTML = `<div class="box" style="margin-top:14px">
-    <div class="label-row"><div class="who">${esc(s.name)}</div>${pill(s)}</div>
+    <div class="label-row"><div class="who">${esc(s.name)}</div>${pill(s)}</div>${bar(s)}
     <p style="margin:0">${status}</p>
     <dl class="kv">${steps.map(([l, ok]) => `<dt>${ok ? "Done" : "Pending"}</dt><dd style="font-family:var(--body)">${l}</dd>`).join("")}</dl>
-    ${s.releases ? `<p class="hint" style="margin:0">${s.releases} earlier pledge${s.releases > 1 ? "s were" : " was"} released without payment.</p>` : ""}
+    ${s.releases ? `<p class="hint" style="margin:0">${s.releases} earlier pledge${s.releases > 1 ? "s were" : " was"} released.</p>` : ""}
   </div>`;
 }
 $("track-form").addEventListener("submit", e => { e.preventDefault(); act(() => lookupTrack($("t-no").value, $("t-email").value)); });
 
 /* Mode and demo controls */
 $("mode-note").textContent = REMOTE
-  ? "Demo. Applications are saved to the organiser's Google Sheet. Payments are simulated and nothing is charged."
+  ? "Demo. Data is saved to the organiser's Google Sheet. Payments are simulated and nothing is charged."
   : "Preview mode. Data stays in this browser, applicants are fictional, and payments are simulated.";
 $("skip").hidden = $("reset").hidden = REMOTE;
-$("skip").addEventListener("click", () => { L.offset += 6 * 3600e3; store(KEY + "-data", L); refresh(); toast("Moved ahead 6 hours. Any pledge past 24 hours is released."); });
-$("reset").addEventListener("click", () => { resetLocal(); my = null; myView = null; store(KEY + "-pledge"); expanded = null; track = null; $("track-result").innerHTML = ""; refresh(); toast("Demo reset."); });
+$("skip").addEventListener("click", () => { L.offset += 6 * 3600e3; persist(); refresh(); toast("Moved ahead 6 hours. Unpaid holds past 24 hours and pools past 7 days are released."); });
+$("reset").addEventListener("click", () => { resetLocal(); mine = []; views = {}; saveMine(); expanded = null; track = null; $("track-result").innerHTML = ""; $("commit-result").innerHTML = ""; refresh(); toast("Demo reset."); });
 
+const VIEWS = ["board", "apply", "sponsor", "track"];
 function route() {
-  const v = ["#apply", "#track"].includes(location.hash) ? location.hash.slice(1) : "board";
-  for (const n of ["board", "apply", "track"]) { $("view-" + n).hidden = n !== v; $("nav-" + n).removeAttribute("aria-current"); }
+  const h = location.hash.slice(1), v = VIEWS.includes(h) ? h : "board";
+  for (const n of VIEWS) { $("view-" + n).hidden = n !== v; $("nav-" + n).removeAttribute("aria-current"); }
   $("nav-" + v).setAttribute("aria-current", "page");
   if (v === "board") renderBoard();
 }
 window.addEventListener("hashchange", route);
-setInterval(() => { if (!co && !busy && !pledgeFormFor) refresh(); }, REMOTE ? 60e3 : 30e3);
+cycleOptions($("s-cycles"), cycleOf(clock()));
+setInterval(() => { if (!co && !busy && !formFor) refresh(); }, REMOTE ? 60e3 : 30e3);
 route(); refresh();
 </script>
 
