@@ -47,9 +47,10 @@ h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 32p
 .stats b { display: block; font-family: var(--display); font-weight: 600; font-size: clamp(36px, 5vw, 48px); line-height: 1; margin-bottom: 6px; color: var(--ink); font-variant-numeric: tabular-nums }
 @media (max-width: 760px) { .stats .s-promised { grid-column: 1 / -1 } }
 .stats .s-need b { color: var(--accent) } .stats .s-paid b { color: var(--paid) } .stats .s-pool b, .stats .s-promised b { color: var(--pledged) }
-.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px }
+.filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px }
+@media (max-width: 640px) { .filters { grid-template-columns: 1fr 1fr } }
 select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
-.filters select { width: auto; max-width: 100% }
+.filters select { width: 100%; min-width: 0 }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; overflow: hidden }
 .card-btn { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; width: 100%; padding: 18px; cursor: pointer }
@@ -160,7 +161,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">PhD Fee Bridge<small>Sponsors cover UMass Amherst application fees for students from Africa</small></div>
+    <div class="brand">PhD Fee Bridge<small>Sponsors cover UMass Amherst PhD application fees for students who need a hand</small></div>
     <nav>
       <a href="#board" id="nav-board">Sponsor board</a>
       <a href="#apply" id="nav-apply">Apply</a>
@@ -185,6 +186,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
     <div id="mine"></div>
     <div id="pools"></div>
     <div class="filters">
+      <select id="f-region" aria-label="Filter by region"><option value="">All regions</option></select>
       <select id="f-field" aria-label="Filter by research area"><option value="">All research areas</option></select>
       <select id="f-country" aria-label="Filter by country"><option value="">All countries</option></select>
       <select id="f-status" aria-label="Filter by status"><option value="">Any status</option><option value="open">Needs a sponsor</option><option value="pledged">Pledged</option><option value="paid">Paid</option></select>
@@ -196,14 +198,14 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
   <main id="view-apply" hidden>
     <h1>Ask for help with your UMass Amherst application fee</h1>
-    <p class="lede">Open to students from any of the 54 African countries for now. One application per person, and we'll email you a code to confirm your address. <a href="#about">Who runs this?</a> Sponsors see your name, country, program and research statement. Your email and UMass applicant ID stay private and are shown only to the sponsor who pledges.</p>
+    <p class="lede">Open to students from any country. One application per person, and we'll email you a code to confirm your address. <a href="#about">Who runs this?</a> Sponsors see your name, country, program and research statement. Your email and UMass applicant ID stay private and are shown only to the sponsor who pledges.</p>
     <form class="apply" id="apply-form" novalidate>
       <div class="grid2">
         <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name"></div>
         <div class="field"><label for="a-email">Email <span class="hint">(private)</span></label><input id="a-email" type="email" autocomplete="email"></div>
       </div>
       <div class="grid2">
-        <div class="field"><label for="a-country">Country of origin</label><select id="a-country"><option value="">Choose your country</option></select><span class="hint">Open to students from African countries for now.</span></div>
+        <div class="field"><label for="a-country">Country of origin</label><select id="a-country"><option value="">Choose your country</option></select></div>
         <div class="field"><label for="a-field">Research area</label><input id="a-field" placeholder="e.g. Soft matter physics"></div>
       </div>
       <div class="grid2">
@@ -261,9 +263,9 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
       </div>
       <div class="grid2">
         <div class="field"><label for="s-field">Research area you care about <span class="hint">(optional)</span></label><input id="s-field" placeholder="e.g. Public health"></div>
-        <div class="field"><label for="s-country">Country you care about <span class="hint">(optional)</span></label><select id="s-country"><option value="">Any country</option></select></div>
+        <div class="field"><label for="s-country">Region or country you care about <span class="hint">(optional)</span></label><select id="s-country"><option value="">Anywhere</option></select></div>
       </div>
-      <span class="hint">If you pick an area or country, we'll also email you when a matching applicant applies.</span>
+      <span class="hint">If you pick an area, region or country, we'll also email you when a matching applicant applies.</span>
       <div><button type="submit">Sign up</button></div>
       <p class="err" id="s-err" hidden></p>
     </form>
@@ -292,7 +294,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
       <h2>How it works</h2>
       <ol class="steps">
-        <li><b>Apply.</b> Students from African countries applying for a PhD or MS/PhD at UMass Amherst share a short research statement and verify their email.</li>
+        <li><b>Apply.</b> Students from anywhere applying for a PhD or MS/PhD at UMass Amherst share a short research statement and verify their email.</li>
         <li><b>Sponsors step in.</b> One sponsor covers the whole $90 fee, or several chip in and pool their shares. Nobody pays until a fee is fully pledged.</li>
         <li><b>The fee gets paid.</b> Sponsors pay within 24 hours, the fee goes to UMass, and the applicant confirms once their application shows it as paid.</li>
       </ol>
@@ -341,8 +343,11 @@ var TABLES = {
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
-/* For now the program is open to applicants from the 54 African countries. */
-var COUNTRIES = ["Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Republic of the Congo", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "The Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"];
+/* Applicants from any country can apply. Sponsors can filter by region or country. */
+var REGIONS = {"Africa": ["Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Republic of the Congo", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "The Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"], "Americas": ["Antigua and Barbuda", "Argentina", "Bahamas", "Barbados", "Belize", "Bolivia", "Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Cuba", "Dominica", "Dominican Republic", "Ecuador", "El Salvador", "Grenada", "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Puerto Rico", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Suriname", "Trinidad and Tobago", "United States", "Uruguay", "Venezuela"], "Asia": ["Afghanistan", "Armenia", "Azerbaijan", "Bahrain", "Bangladesh", "Bhutan", "Brunei", "Cambodia", "China", "Cyprus", "Georgia", "Hong Kong", "India", "Indonesia", "Iran", "Iraq", "Israel", "Japan", "Jordan", "Kazakhstan", "Kuwait", "Kyrgyzstan", "Laos", "Lebanon", "Macau", "Malaysia", "Maldives", "Mongolia", "Myanmar", "Nepal", "North Korea", "Oman", "Pakistan", "Palestine", "Philippines", "Qatar", "Saudi Arabia", "Singapore", "South Korea", "Sri Lanka", "Syria", "Taiwan", "Tajikistan", "Thailand", "Timor-Leste", "Turkey", "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen"], "Europe": ["Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina", "Bulgaria", "Croatia", "Czechia", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Kosovo", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malta", "Moldova", "Monaco", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland", "Portugal", "Romania", "Russia", "San Marino", "Serbia", "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland", "Ukraine", "United Kingdom", "Vatican City"], "Oceania": ["Australia", "Fiji", "Kiribati", "Marshall Islands", "Micronesia", "Nauru", "New Zealand", "Palau", "Papua New Guinea", "Samoa", "Solomon Islands", "Tonga", "Tuvalu", "Vanuatu"]};
+var COUNTRIES = Object.keys(REGIONS).reduce(function (a, r) { return a.concat(REGIONS[r]); }, []).sort(function (a, b) { return a.localeCompare(b); });
+function regionOf(c) { for (var r in REGIONS) if (REGIONS[r].indexOf(c) >= 0) return r; return ""; }
+function prefMatches(pref, country) { return !!pref && (pref === country || pref === "region:" + regionOf(country)); }
 
 var LEVELS = ["PhD", "MS/PhD"];
 var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -381,7 +386,7 @@ function pubApp(db, a) {
   var pool = poolOf(db, a), st = statusOf(pool);
   if (st === "paid" && a.confirmedAt) st = "confirmed";
   return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
-    waiver: a.waiver, statement: a.statement, status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
+    waiver: a.waiver, statement: a.statement, region: regionOf(a.country), status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
 function isLive(a) { return yes(a.verified); }
 function pledgeView(db, p) {
@@ -473,7 +478,7 @@ function handle(req, db) {
     keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
     if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
     if (LEVELS.indexOf(String(d.level).trim()) < 0) fail("Choose PhD or MS/PhD.");
-    if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("For now, applications are open to students from African countries.");
+    if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("Choose your country from the list.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
     if (A.all().some(function (x) { return lc(x.email) === lc(d.email); })) fail("There's already an application with this email. One application per person: use Track my application to see it.");
     if (A.all().some(function (x) { return lc(x.umassId) === lc(d.umassId); })) fail("There's already an application with this UMass applicant ID. One application per person.");
@@ -495,7 +500,7 @@ function handle(req, db) {
       if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from PhD Fee Bridge.");
       va.verified = "true"; A.save(va); db.log(va.appNo, "email verified", "");
       db.mail(va.email, "You're on the sponsor board", "Hi " + va.name.split(" ")[0] + ",\n\nYour email is verified and your request is now on the sponsor board. Keep your application number " + va.appNo + " private, and use it with this email to track your application.\n\n" + db.site + "#track");
-      S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(va.field).indexOf(lc(s.prefField)) >= 0) || (s.prefCountry && s.prefCountry === va.country)); })
+      S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(va.field).indexOf(lc(s.prefField)) >= 0) || prefMatches(s.prefCountry, va.country)); })
         .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     }
     return trackView(db, va);
@@ -569,7 +574,7 @@ function handle(req, db) {
     if (!req.anon && !String(req.name || "").trim()) fail("Add your name, or choose to stay anonymous.");
     if (S.all().some(function (s) { return lc(s.email) === lc(req.email) && s.status === "active"; })) fail("You're already signed up with this email. Use your sponsor code to make changes.");
     var s = { code: "SP-" + rnd(4), createdAt: t, name: String(req.name || "").trim().slice(0, 120), email: String(req.email).trim(), anon: String(!!req.anon),
-      students: n, cycles: String(req.cycles), prefField: String(req.prefField || "").trim().slice(0, 80), prefCountry: COUNTRIES.indexOf(req.prefCountry) >= 0 ? req.prefCountry : "", status: "active", reminded: "" };
+      students: n, cycles: String(req.cycles), prefField: String(req.prefField || "").trim().slice(0, 80), prefCountry: (COUNTRIES.indexOf(req.prefCountry) >= 0 || /^region:/.test(req.prefCountry || "") && REGIONS[String(req.prefCountry).slice(7)]) ? req.prefCountry : "", status: "active", reminded: "" };
     S.add(s); db.log("", "sponsor signed up", s.code + " " + n + " students, cycle " + s.cycles);
     db.mail(s.email, "You're a committed sponsor: " + s.code, "Thank you for committing to cover " + n + " student" + (n > 1 ? "s'" : "'s") + " application fee" + (n > 1 ? "s" : "") + ". We'll remind you when the application season opens (September) and again in December.\n\nYour sponsor code is " + s.code + ". Use it with this email to change or stop your commitment at " + db.site + "#sponsor");
     return sponsorView(db, s);
@@ -620,7 +625,9 @@ function seedData(now) {
     { id: "yonas001", appNo: "FB-26-4151", createdAt: now - 30 * H, name: "Yonas Bekele", email: "yonas@example.com", umassId: "UMA-118802", country: "Ethiopia", field: "Applied mathematics", program: "Mathematics", level: "PhD", deadline: "2026-12-12", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
       statement: "I want to use mathematical models to plan where new health posts should go in rural Ethiopia, so that more people live within a two-hour walk of basic care.\n\nAs a lecturer at Bahir Dar University I built a small optimisation model for one zone, using road and population data, and the regional health bureau used it to argue for two new sites.\n\nAt UMass I hope to deepen my training in optimisation and probability, and to work on methods that handle missing and uncertain data, which is the normal situation where I work." },
     { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0, verified: "true",
-      statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." }
+      statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." },
+    { id: "anil0001", appNo: "FB-26-4158", createdAt: now - 10 * H, name: "Anil Gurung", email: "anil@example.com", umassId: "UMA-118901", country: "Nepal", field: "Civil engineering", program: "Civil Engineering", level: "PhD", deadline: "2026-12-15", waiver: "Waiver request was declined", status: "open", releases: 0, verified: "true",
+      statement: "Landslides close Nepal's mountain roads every monsoon, cutting villages off from markets and hospitals for weeks. I want to develop low-cost slope monitoring that district engineers can install and read themselves.\n\nAfter my bachelor's at Tribhuvan University I spent three years with a road maintenance team in Gandaki Province, logging every slope failure on a 90 km stretch. That data shows clear warning patterns that nobody has had time to model.\n\nAt UMass Amherst I hope to combine geotechnical engineering with simple sensor networks, and bring the results back to the teams who keep these roads open." }
   ].map(function (o) { return fill(TABLES.Applications, o); });
   var pledges = [
     { code: "PL-H7KQ", appId: "wanjiru1", createdAt: now - 17 * H, sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", amount: 90, status: "due", dueAt: now + 7 * H },
@@ -642,7 +649,7 @@ function seedData(now) {
 /* ===== Website ===== */
 var API_URL = (window.FEE_BRIDGE_API || "").trim();
 var REMOTE = !!API_URL;
-var KEY = "feebridge-v4";
+var KEY = "feebridge-v5";
 const $ = id => document.getElementById(id);
 const usd = n => "$" + Number(n).toFixed(0);
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -712,8 +719,10 @@ const names = list => { const named = list.filter(c => c.name).map(c => c.name),
 const myOn = id => Object.values(views).find(v => v.app && v.app.id === id);
 
 function fillFilters() {
-  for (const [id, key] of [["f-field", "field"], ["f-country", "country"]]) {
-    const sel = $(id), cur = sel.value, vals = [...new Set(data.students.map(s => s[key]))].sort();
+  const fr = $("f-region").value;
+  for (const [id, key] of [["f-region", "region"], ["f-field", "field"], ["f-country", "country"]]) {
+    const pool = key === "country" && fr ? data.students.filter(s => s.region === fr) : data.students;
+    const sel = $(id), cur = sel.value, vals = [...new Set(pool.map(s => s[key]))].sort();
     sel.length = 1; vals.forEach(v => sel.add(new Option(v, v))); sel.value = cur;
   }
 }
@@ -740,16 +749,17 @@ function renderBoard() {
         <div class="actions"><button class="ghost" data-act="forget" data-code="${v.code}">Hide</button></div>`}
     </div>`).join("") : "";
 
-  const pools = S.filter(s => s.status === "pooling").sort((a, b) => a.pool.left - b.pool.left);
+  const pr = $("f-region").value, pc = $("f-country").value;
+  const pools = S.filter(s => s.status === "pooling" && (!pr || s.region === pr) && (!pc || s.country === pc)).sort((a, b) => a.pool.left - b.pool.left);
   $("pools").innerHTML = pools.length ? `<h2 class="h3">Pools waiting to fill</h2><div class="pool-list">` + pools.map(s => `
     <button class="pool-row" data-act="chip" data-id="${s.id}">
       <span class="pool-who"><b>${esc(s.name)}</b><span class="meta">${esc(s.level)}, ${esc(s.program)}</span></span>
       ${bar(s)}<span class="pool-left"><b>${usd(s.pool.left)}</b> left</span>
     </button>`).join("") + `</div>` : "";
 
-  const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value;
+  const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value, fr = $("f-region").value;
   const order = { pooling: 0, open: 1, funding: 2, paid: 3 };
-  const list = S.filter(s => s.status !== "confirmed").filter(s => (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
+  const list = S.filter(s => s.status !== "confirmed").filter(s => (!fr || s.region === fr) && (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
     .sort((a, b) => order[a.status] - order[b.status] || new Date(a.deadline) - new Date(b.deadline));
   $("cards").innerHTML = list.length ? list.map(card).join("") : `<p class="lede">${S.some(s => s.status !== "confirmed") ? "No applicants match these filters." : "No applications yet. Once someone applies, they'll appear here."}</p>`;
 
@@ -847,6 +857,7 @@ $("view-board").addEventListener("click", e => {
   });
 });
 ["f-field", "f-country", "f-status"].forEach(id => $(id).addEventListener("change", renderBoard));
+$("f-region").addEventListener("change", () => { $("f-country").value = ""; fillFilters(); renderBoard(); });
 $("view-board").addEventListener("input", e => { if (e.target.id === "p-amt") document.querySelectorAll(".chip").forEach(c => c.classList.remove("on")); });
 
 $("code-form").addEventListener("submit", e => {
@@ -915,7 +926,15 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && co && co.s
 
 /* Apply */
 PROGRAMS.forEach(([n]) => $("a-program").add(new Option(n, n)));
-COUNTRIES.forEach(c => { $("a-country").add(new Option(c, c)); $("s-country").add(new Option(c, c)); });
+function countryGroups(sel, withRegions) {
+  Object.keys(REGIONS).forEach(r => {
+    const g = document.createElement("optgroup"); g.label = r;
+    if (withRegions) g.appendChild(new Option(`Anyone from ${r}`, "region:" + r));
+    [...REGIONS[r]].sort((x, y) => x.localeCompare(y)).forEach(c => g.appendChild(new Option(c, c)));
+    sel.appendChild(g);
+  });
+}
+countryGroups($("a-country"), false); countryGroups($("s-country"), true);
 $("a-program").addEventListener("change", () => {
   const p = PROGRAMS.find(([n]) => n === $("a-program").value), sel = $("a-level");
   sel.length = 0;
