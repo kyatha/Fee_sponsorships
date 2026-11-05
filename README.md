@@ -13,6 +13,10 @@ Not affiliated with or endorsed by UMass Amherst.
 - **Pools that stall:** if a pool hasn't filled within 7 days, or the deadline is less than 2 days away, its unpaid pledges are released and those sponsors are emailed.
 - **One open pledge at a time,** unless you're a committed sponsor, who can hold as many as the number of students they committed to.
 - **Committed sponsors** sign up to cover N students per cycle. A cycle is one UMass application season, September to January, named by the fall it leads to, so Sep 2026 to Jan 2027 is "Fall 2027". Pledges stay first come, first served. Committed sponsors get emails when the season opens and again in December, and also when a new applicant matches the research area or country they picked.
+- **One application per person:** an email address or UMass applicant ID can only apply once.
+- **Email verification:** after applying, the applicant gets a 6-digit code by email. Their card only appears on the board after they enter it, either straight away or later under Track my application.
+- **Applicant confirms payment:** once sponsors have paid, the card shows "Paid · awaiting confirmation". The applicant confirms under Track my application when UMass shows the fee as paid. The card then leaves the board, is counted under "fees covered", and stays on the thank-you wall. If the applicant doesn't respond within 7 days, it's confirmed automatically.
+- **Cover full or chip in:** "Cover the full $90" (or "Cover the last $X") offers **Pay now** or **Confirm pledge** (pay within 24 hours). "Chip in part" offers $10, $30, $50 or another amount below what's left.
 - **Collector account (real version):** pool shares go into one organiser-run account, for example PayPal Business, and the organiser pays UMass with that account's card when a fee is complete. A full-fee sponsor can pay the same way.
 
 ## Files
@@ -35,7 +39,7 @@ Not affiliated with or endorsed by UMass Amherst.
    ```
 7. Commit `config.js`. GitHub Pages updates within a minute or two.
 
-If you change `Code.gs` later, go to **Deploy → Manage deployments → Edit → Version: New version** so the change goes live.
+If you change `Code.gs` later, paste the new version, run **setup** again (it adds any new columns and keeps your data), then go to **Deploy → Manage deployments → Edit → Version: New version** so the change goes live.
 
 ### Emails
 

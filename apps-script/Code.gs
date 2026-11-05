@@ -19,6 +19,9 @@ function setup() {
     sh.getRange(1, 1, 1, TABLES[name].length).setValues([TABLES[name]]).setFontWeight("bold");
     sh.setFrozenRows(1);
   });
+  // Applications made before email verification existed count as verified.
+  var apps = sheetDb().table("Applications");
+  apps.all().forEach(function (o) { if (!o.verified) { o.verified = "true"; apps.save(o); } });
   var lg = ss.getSheetByName("Log") || ss.insertSheet("Log");
   lg.getRange(1, 1, 1, 4).setValues([["time", "appNo", "event", "detail"]]).setFontWeight("bold");
   lg.setFrozenRows(1);
@@ -81,10 +84,11 @@ function sheetDb() {
 var FEE = 90;                    // UMass Amherst graduate application fee, USD
 var MIN_SHARE = 5;               // smallest pool contribution, USD
 var HOLD_MS = 24 * 3600e3;       // time to pay once a fee is fully pledged
+var CONFIRM_MS = 7 * 24 * 3600e3; // a paid fee counts as confirmed if the applicant hasn't confirmed within 7 days
 var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
 
 var TABLES = {
-  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases"],
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt"],
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
@@ -125,10 +129,12 @@ function statusOf(pool) { return pool.paid >= FEE ? "paid" : pool.committed >= F
 
 /* What anyone can see. Emails, UMass applicant IDs, application numbers and codes never leave through here. */
 function pubApp(db, a) {
-  var pool = poolOf(db, a);
+  var pool = poolOf(db, a), st = statusOf(pool);
+  if (st === "paid" && a.confirmedAt) st = "confirmed";
   return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
-    waiver: a.waiver, statement: a.statement, status: statusOf(pool), pool: pool, releases: num(a.releases) };
+    waiver: a.waiver, statement: a.statement, status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
+function isLive(a) { return yes(a.verified); }
 function pledgeView(db, p) {
   var a = db.table("Applications").all().filter(function (x) { return x.id === p.appId; })[0];
   var v = { code: p.code, amount: num(p.amount), status: p.status, createdAt: num(p.createdAt), dueAt: num(p.dueAt),
@@ -149,6 +155,11 @@ function sponsorView(db, s) {
     status: s.status, cycle: c, used: Math.round(usedThisCycle(db, s.email, c) * 10) / 10, countsThisCycle: matchesCycle(s, c) };
 }
 
+function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
+function sendCode(db, a) {
+  db.mail(a.email, "Your PhD Fee Bridge verification code: " + a.verifyCode,
+    "Hi " + a.name.split(" ")[0] + ",\n\nYour verification code is " + a.verifyCode + ". Enter it on the site to put your request on the sponsor board.\n\nYour application number is " + a.appNo + ". Keep it private.\n\n" + db.site + "#track");
+}
 function syncApp(db, a) {
   var st = statusOf(poolOf(db, a));
   if (a.status !== st) { a.status = st; if (st === "paid") a.paidAt = db.now(); db.table("Applications").save(a); }
@@ -162,6 +173,11 @@ function releasePledge(db, p, why) {
 function expireHolds(db) {
   var t = db.now(), P = db.table("Pledges");
   P.all().forEach(function (p) { if (p.status === "due" && t >= num(p.dueAt)) releasePledge(db, p, "released: not paid within 24 hours"); });
+  db.table("Applications").all().forEach(function (a) {
+    if (a.status === "paid" && !a.confirmedAt && num(a.paidAt) && t - num(a.paidAt) >= CONFIRM_MS) {
+      a.confirmedAt = t; db.table("Applications").save(a); db.log(a.appNo, "confirmed automatically after 7 days", "");
+    }
+  });
   db.table("Applications").all().forEach(function (a) {
     var pool = poolOf(db, a), closeToDeadline = new Date(a.deadline + "T23:59:59Z").getTime() - t < 2 * 864e5;
     if (pool.endsAt && (t >= pool.endsAt || closeToDeadline)) {
@@ -178,6 +194,12 @@ function handle(req, db) {
   expireHolds(db);
   var A = db.table("Applications"), P = db.table("Pledges"), S = db.table("Sponsors"), t = db.now(), act = req.action;
   function app(id) { var a = A.all().filter(function (x) { return x.id === id; })[0]; if (!a) fail("That applicant is no longer listed."); return a; }
+  function appByNo() {
+    var no = String(req.appNo || "").trim().toUpperCase();
+    var x = A.all().filter(function (r) { return r.appNo === no && lc(r.email) === lc(req.email); })[0];
+    if (!x) fail("No application matches that number and email.");
+    return x;
+  }
   function pledgeByCode() {
     var code = String(req.code || "").trim().toUpperCase();
     var p = P.all().filter(function (x) { return x.code === code && lc(x.sponsorEmail) === lc(req.email); })[0];
@@ -194,7 +216,7 @@ function handle(req, db) {
   if (act === "list") {
     var c = cycleOf(t);
     var promised = sum(S.all().filter(function (s) { return matchesCycle(s, c); }), function (s) { return Math.max(0, num(s.students) - usedThisCycle(db, s.email, c)); });
-    return { students: A.all().map(function (a) { return pubApp(db, a); }), promised: Math.floor(promised), cycle: c, inSeason: inSeason(t), now: t };
+    return { students: A.all().filter(isLive).map(function (a) { return pubApp(db, a); }), promised: Math.floor(promised), cycle: c, inSeason: inSeason(t), now: t };
   }
 
   if (act === "apply") {
@@ -204,19 +226,42 @@ function handle(req, db) {
     if (LEVELS.indexOf(String(d.level).trim()) < 0) fail("Choose PhD or MS/PhD.");
     if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("For now, applications are open to students from African countries.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
+    if (A.all().some(function (x) { return lc(x.email) === lc(d.email); })) fail("There's already an application with this email. One application per person: use Track my application to see it.");
+    if (A.all().some(function (x) { return lc(x.umassId) === lc(d.umassId); })) fail("There's already an application with this UMass applicant ID. One application per person.");
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
-    var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0 };
+    var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0, verified: "false", verifyCode: String(Math.floor(100000 + Math.random() * 900000)) };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
-    A.add(o); db.log(o.appNo, "applied", o.country + ", " + o.program);
-    db.mail(o.email, "Your PhD Fee Bridge application number: " + o.appNo,
-      "Hi " + o.name.split(" ")[0] + ",\n\nYour request is on the sponsor board. Your private application number is " + o.appNo + ". Use it with this email address to track your application.\n\n" + db.site + "#track");
-    S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(o.field).indexOf(lc(s.prefField)) >= 0) || (s.prefCountry && s.prefCountry === o.country)); })
-      .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", o.name + " from " + o.country + " (" + o.level + ", " + o.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
-    return { appNo: o.appNo };
+    A.add(o); db.log(o.appNo, "applied (not yet verified)", o.country + ", " + o.program);
+    sendCode(db, o);
+    var out = { appNo: o.appNo }; if (db.demo) out.demoCode = o.verifyCode;
+    return out;
+  }
+  if (act === "resendCode") {
+    var rc = appByNo(); if (yes(rc.verified)) fail("This email is already verified.");
+    sendCode(db, rc); var r2 = {}; if (db.demo) r2.demoCode = rc.verifyCode; return r2;
+  }
+  if (act === "verify") {
+    var va = appByNo();
+    if (!yes(va.verified)) {
+      if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from PhD Fee Bridge.");
+      va.verified = "true"; A.save(va); db.log(va.appNo, "email verified", "");
+      db.mail(va.email, "You're on the sponsor board", "Hi " + va.name.split(" ")[0] + ",\n\nYour email is verified and your request is now on the sponsor board. Keep your application number " + va.appNo + " private, and use it with this email to track your application.\n\n" + db.site + "#track");
+      S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(va.field).indexOf(lc(s.prefField)) >= 0) || (s.prefCountry && s.prefCountry === va.country)); })
+        .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
+    }
+    return trackView(db, va);
+  }
+  if (act === "confirmPaid") {
+    var ca = appByNo();
+    if (pubApp(db, ca).status === "confirmed") return trackView(db, ca);
+    if (pubApp(db, ca).status !== "paid") fail("Sponsors haven't finished paying this fee yet.");
+    ca.confirmedAt = t; A.save(ca); db.log(ca.appNo, "applicant confirmed the fee was paid", "");
+    return trackView(db, ca);
   }
 
   if (act === "pledge") {
     var a = app(req.id), pool = poolOf(db, a);
+    if (!isLive(a)) fail("That applicant is no longer listed.");
     if (statusOf(pool) === "paid" || statusOf(pool) === "funding") fail("This fee is already fully pledged.");
     var amount = Math.round(num(req.amount));
     if (amount < MIN_SHARE && amount !== pool.left) fail("The smallest amount you can chip in is $" + MIN_SHARE + ".");
@@ -264,10 +309,7 @@ function handle(req, db) {
     return {};
   }
   if (act === "track") {
-    var no = String(req.appNo || "").trim().toUpperCase();
-    var ta = A.all().filter(function (x) { return x.appNo === no && lc(x.email) === lc(req.email); })[0];
-    if (!ta) fail("No application matches that number and email.");
-    var tv = pubApp(db, ta); tv.appNo = ta.appNo; return tv;
+    return trackView(db, appByNo());
   }
 
   if (act === "commit") {
@@ -316,19 +358,19 @@ function seedData(now) {
   var H = 3600e3, c = cycleOf(now);
   function fill(cols, o) { var r = {}; cols.forEach(function (k) { r[k] = o[k] === undefined ? "" : String(o[k]); }); return r; }
   var apps = [
-    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
+    { id: "amina001", appNo: "FB-26-4127", createdAt: now - 90 * H, name: "Amina Okafor", email: "amina@example.com", umassId: "UMA-118204", country: "Nigeria", field: "Microbiology", program: "Microbiology", level: "PhD", deadline: "2026-12-01", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
       statement: "I want to understand how antibiotic resistance genes move between bacteria in hospital wastewater. During my master's at the University of Ibadan I sampled drains from three teaching hospitals in Oyo State and found resistance genes at levels well above what local guidelines assume. Very little of this monitoring happens in West Africa, so treatment choices are often made without local data.\n\nAt UMass Amherst I hope to join a lab that combines field sampling with genomic sequencing, and build a low-cost surveillance method a regional lab could run with basic equipment.\n\nThe application fee is the last step I cannot cover myself this cycle." },
-    { id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 1,
+    { id: "wanjiru1", appNo: "FB-26-4131", createdAt: now - 80 * H, name: "Wanjiru Kamau", email: "wanjiru@example.com", umassId: "UMA-118377", country: "Kenya", field: "Environmental conservation", program: "Environmental Conservation", level: "PhD", deadline: "2026-11-20", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 1, verified: "true",
       statement: "I study how shifting rainfall in Kenya's Rift Valley changes which crops smallholder farmers can still grow. For two years I worked with a county extension office mapping maize failures against weather station records.\n\nAt UMass I want to model land use and rainfall together so extension officers can give advice a season ahead. I'm drawn to the department's work on working landscapes, where conservation and farming share the same ground.\n\nI grew up on one of these farms, and I want my research to reach the people making planting decisions." },
-    { id: "kwame001", appNo: "FB-26-4102", createdAt: now - 120 * H, name: "Kwame Mensah", email: "kwame@example.com", umassId: "UMA-117950", country: "Ghana", field: "Machine learning", program: "Computer Science", level: "PhD", deadline: "2026-12-15", waiver: "Doesn't qualify for a waiver", status: "paid", paidAt: now - 49 * H, releases: 0,
+    { id: "kwame001", appNo: "FB-26-4102", createdAt: now - 120 * H, name: "Kwame Mensah", email: "kwame@example.com", umassId: "UMA-117950", country: "Ghana", field: "Machine learning", program: "Computer Science", level: "PhD", deadline: "2026-12-15", waiver: "Doesn't qualify for a waiver", status: "paid", paidAt: now - 49 * H, confirmedAt: now - 40 * H, releases: 0, verified: "true",
       statement: "Speech recognition works well in English and poorly in Twi, Ewe, Ga and most other Ghanaian languages. I want to build models that learn from small amounts of recorded speech, so a language with a few hundred hours of audio can still get a usable system.\n\nAt my current job in Accra I helped collect a Twi speech dataset with a nonprofit, and saw that good data mattered more than model size. At UMass I'd like to work on self-supervised learning and careful dataset design for low-resource languages, and release open models for health hotlines and farm advisory services." },
-    { id: "fatou001", appNo: "FB-26-4140", createdAt: now - 70 * H, name: "Fatou Diallo", email: "fatou@example.com", umassId: "UMA-118512", country: "Senegal", field: "Public health", program: "Community Health Education: Public Health", level: "PhD", deadline: "2026-12-10", waiver: "Waiver request was declined", status: "pooling", releases: 0,
+    { id: "fatou001", appNo: "FB-26-4140", createdAt: now - 70 * H, name: "Fatou Diallo", email: "fatou@example.com", umassId: "UMA-118512", country: "Senegal", field: "Public health", program: "Community Health Education: Public Health", level: "PhD", deadline: "2026-12-10", waiver: "Waiver request was declined", status: "pooling", releases: 0, verified: "true",
       statement: "In rural Senegal, many women give birth without a skilled attendant because the nearest clinic is hours away. I worked for two years as a field coordinator for a maternal health program in the Kolda region, tracking which women reached care and which did not.\n\nAt UMass I want to study how travel time, cost and trust in clinics combine to keep women from care, and design interventions the regional health authority can afford.\n\nI'm the first in my family to apply to a PhD." },
-    { id: "tendai01", appNo: "FB-26-4144", createdAt: now - 60 * H, name: "Tendai Moyo", email: "tendai@example.com", umassId: "UMA-118640", country: "Zimbabwe", field: "Polymer science", program: "Polymer Science and Engineering", level: "MS/PhD", deadline: "2026-12-05", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 0,
+    { id: "tendai01", appNo: "FB-26-4144", createdAt: now - 60 * H, name: "Tendai Moyo", email: "tendai@example.com", umassId: "UMA-118640", country: "Zimbabwe", field: "Polymer science", program: "Polymer Science and Engineering", level: "MS/PhD", deadline: "2026-12-05", waiver: "Doesn't qualify for a waiver", status: "funding", releases: 0, verified: "true",
       statement: "I want to design polymer binders that make sodium-ion batteries last longer. Sodium is cheap and plentiful, which could make grid storage affordable in countries like Zimbabwe, where power cuts are a daily problem, but the electrodes crack and fade quickly.\n\nIn my undergraduate thesis at the University of Zimbabwe I tested three water-based binders and saw one roughly double the cycle life. UMass Amherst's polymer science program is where I most want to take this further.\n\nAfter the PhD I want to help build battery research capacity back home." },
-    { id: "yonas001", appNo: "FB-26-4151", createdAt: now - 30 * H, name: "Yonas Bekele", email: "yonas@example.com", umassId: "UMA-118802", country: "Ethiopia", field: "Applied mathematics", program: "Mathematics", level: "PhD", deadline: "2026-12-12", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0,
+    { id: "yonas001", appNo: "FB-26-4151", createdAt: now - 30 * H, name: "Yonas Bekele", email: "yonas@example.com", umassId: "UMA-118802", country: "Ethiopia", field: "Applied mathematics", program: "Mathematics", level: "PhD", deadline: "2026-12-12", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
       statement: "I want to use mathematical models to plan where new health posts should go in rural Ethiopia, so that more people live within a two-hour walk of basic care.\n\nAs a lecturer at Bahir Dar University I built a small optimisation model for one zone, using road and population data, and the regional health bureau used it to argue for two new sites.\n\nAt UMass I hope to deepen my training in optimisation and probability, and to work on methods that handle missing and uncertain data, which is the normal situation where I work." },
-    { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0,
+    { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0, verified: "true",
       statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." }
   ].map(function (o) { return fill(TABLES.Applications, o); });
   var pledges = [
