@@ -91,6 +91,7 @@ var TABLES = {
 /* For now the program is open to applicants from the 54 African countries. */
 var COUNTRIES = ["Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Republic of the Congo", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "The Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"];
 
+var LEVELS = ["PhD", "MS/PhD"];
 var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function rnd(n) { var s = ""; for (var i = 0; i < n; i++) s += ALPH[Math.floor(Math.random() * ALPH.length)]; return s; }
 function wordCount(t) { return (String(t || "").trim().match(/\S+/g) || []).length; }
@@ -200,6 +201,7 @@ function handle(req, db) {
     var d = req.data || {}, keys = ["name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement"];
     keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
     if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
+    if (LEVELS.indexOf(String(d.level).trim()) < 0) fail("Choose PhD or MS/PhD.");
     if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("For now, applications are open to students from African countries.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
