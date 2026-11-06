@@ -3,62 +3,68 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PhD Fee Bridge</title>
+<title>UMass Fee Bridge</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
 /* Layout: slim top bar with three views (Sponsor board, Apply, Track); board is a column of applicant cards that expand to the statement, pledge hold and simulated checkout. */
 :root {
-  --bg: #f5f6f8; --surface: #ffffff; --ink: #18202e; --muted: #5b6577; --line: #dde1e8;
-  --accent: #2b4c9b; --accent-soft: #e6ecf8; --pledged: #a86a00; --pledged-soft: #fbf0d9;
-  --paid: #1d7a4e; --paid-soft: #e0f2e8; --danger: #b3261e; --scrim: rgba(16, 22, 34, .55);
-  --display: "Newsreader", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --bg: #f4f4f4; --surface: #ffffff; --ink: #212721; --muted: #505759; --line: #d5d8d9;
+  --accent: #881c1c; --accent-soft: #f5e6e6; --pledged: #a8500c; --pledged-soft: #fff4d6;
+  --paid: #44693d; --paid-soft: #e6eee3; --danger: #b3261e; --scrim: rgba(20, 20, 20, .55); --gold: #ffc72c; --navy: #002554; --purple: #615e9b; --teal: #00727f;
+  --display: "Lora", Georgia, serif; --body: "Open Sans", Helvetica, Arial, sans-serif; --mono: "Open Sans", Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #11151c; --surface: #1a1f29; --ink: #e8ebf1; --muted: #9aa3b4; --line: #2c3340;
-  --accent: #8aa6ef; --accent-soft: #222c44; --pledged: #e3ad4f; --pledged-soft: #33290f;
-  --paid: #5fc893; --paid-soft: #15301f; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); color-scheme: dark } }
+  --bg: #151515; --surface: #1f1f1f; --ink: #ececec; --muted: #a9b0b2; --line: #363838;
+  --accent: #e88a8a; --accent-soft: #3a1e1e; --pledged: #f0b049; --pledged-soft: #33280f;
+  --paid: #8fc27f; --paid-soft: #1d2b19; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); --gold: #c99a1c; --navy: #8fb3e8; --purple: #b3b0e6; --teal: #5fd0dd; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #11151c; --surface: #1a1f29; --ink: #e8ebf1; --muted: #9aa3b4; --line: #2c3340;
-  --accent: #8aa6ef; --accent-soft: #222c44; --pledged: #e3ad4f; --pledged-soft: #33290f;
-  --paid: #5fc893; --paid-soft: #15301f; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); color-scheme: dark }
+  --bg: #151515; --surface: #1f1f1f; --ink: #ececec; --muted: #a9b0b2; --line: #363838;
+  --accent: #e88a8a; --accent-soft: #3a1e1e; --pledged: #f0b049; --pledged-soft: #33280f;
+  --paid: #8fc27f; --paid-soft: #1d2b19; --danger: #f2948c; --scrim: rgba(0, 0, 0, .65); --gold: #c99a1c; --navy: #8fb3e8; --purple: #b3b0e6; --teal: #5fd0dd; color-scheme: dark }
 * { box-sizing: border-box }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+html, body { overflow-x: clip }
 [hidden] { display: none !important }
 .wrap { max-width: 860px; margin: 0 auto }
-header { display: grid; gap: 16px; padding-block: 24px 20px; border-bottom: 1px solid var(--line) }
-.brand { font-family: var(--display); font-size: clamp(44px, 9vw, 76px); line-height: 1; letter-spacing: -0.02em; font-weight: 600; letter-spacing: -0.01em }
-.brand small { display: block; margin-top: 6px; line-height: 1.4; font-family: var(--body); font-size: 17px; font-weight: 400; color: var(--muted); letter-spacing: 0 }
-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px }
-@media (max-width: 600px) { nav { grid-template-columns: repeat(2, 1fr); border-radius: 14px } nav a { border-radius: 10px } }
-nav a { text-decoration: none; color: var(--muted); padding: 9px 10px; border-radius: 999px; font-weight: 500; font-size: 17px; text-align: center }
-nav a:hover { color: var(--accent) }
-nav a[aria-current="page"] { background: var(--accent); color: var(--surface) }
-.demo { margin-top: 16px; font-size: 15px; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between }
+header { position: relative; display: grid; gap: 16px; padding-block: 28px 18px; margin-bottom: 5px; background: #881c1c; color: #fff; box-shadow: 0 0 0 100vmax #881c1c; clip-path: inset(0 -100vmax -5px) }
+header::after { content: ""; position: absolute; left: -100vmax; right: -100vmax; bottom: -5px; height: 5px; background: #ffc72c }
+.brand { font-family: var(--display); font-size: clamp(44px, 9vw, 76px); line-height: 1; font-weight: 700; letter-spacing: -0.01em; color: #fff }
+.brand small { display: block; margin-top: 6px; line-height: 1.4; font-family: var(--body); font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0 }
+nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(0,0,0,.18); border-radius: 4px; padding: 4px }
+@media (max-width: 600px) { nav { grid-template-columns: repeat(2, 1fr); border-radius: 6px } nav a { border-radius: 4px } }
+nav a { text-decoration: none; color: #fff; padding: 9px 10px; border-radius: 4px; font-weight: 600; font-size: 17px; text-align: center }
+nav a:hover { background: rgba(255,255,255,.12) }
+nav a[aria-current="page"] { background: #fff; color: #881c1c }
+.demo { margin-top: 16px; font-size: 15px; color: var(--muted); background: var(--accent-soft); border-radius: 4px; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between }
 .demo button { padding: 4px 10px; font-size: 15px }
-h1 { font-family: var(--display); font-weight: 500; font-size: clamp(24px, 3.15vw, 31px); line-height: 1.2; margin: 28px 0 8px; text-wrap: wrap }
-h2 { font-family: var(--display); font-weight: 500; font-size: 22px; margin: 32px 0 10px }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(24px, 3.15vw, 31px); line-height: 1.2; margin: 28px 0 8px; text-wrap: wrap }
+h2 { font-family: var(--display); font-weight: 600; color: var(--accent); font-size: 22px; margin: 32px 0 10px }
 .lede { color: var(--muted); margin: 0 0 20px; font-size: 18px }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 0 0 20px; font-size: 15px; color: var(--muted); line-height: 1.35 }
-.stats > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px }
+.stats > div { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px }
 .stats b { display: block; font-family: var(--display); font-weight: 600; font-size: clamp(36px, 5vw, 48px); line-height: 1; margin-bottom: 6px; color: var(--ink); font-variant-numeric: tabular-nums }
 @media (max-width: 760px) { .stats .s-promised { grid-column: 1 / -1 } }
-.stats .s-need b { color: var(--accent) } .stats .s-paid b { color: var(--paid) } .stats .s-pool b, .stats .s-promised b { color: var(--pledged) }
-.billing { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 2px; margin: 0 0 12px } .billing legend { font-size: 14px; color: var(--muted); padding: 0 4px }
+.stats > div { border-top: 4px solid var(--line) }
+.stats .s-need { --c: var(--navy) } .stats .s-left { --c: var(--purple) } .stats .s-pool { --c: var(--pledged) } .stats .s-paid { --c: var(--paid) } .stats .s-promised { --c: var(--teal) }
+.stats > div[class] { border-top-color: var(--c) }
+.stats > div[class] b { color: var(--c) }
+.billing { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px 2px; margin: 0 0 12px } .billing legend { font-size: 14px; color: var(--muted); padding: 0 4px }
 .method.umass { width: 100%; text-align: left; flex-direction: column; align-items: flex-start; gap: 4px; border-color: var(--accent, #2a4a9a); margin-bottom: 4px }
-.btn-link { display: block; text-align: center; padding: 10px 14px; border-radius: 8px; background: var(--accent, #2a4a9a); color: var(--surface); font-weight: 600; text-decoration: none; margin: 12px 0 }
-.disclaimer { border: 1px solid var(--line); border-left: 4px solid var(--pledged); background: var(--pledged-soft); border-radius: 10px; padding: 12px 14px }
+.btn-link { display: block; text-align: center; padding: 10px 14px; border-radius: 4px; background: var(--accent, #2a4a9a); color: var(--surface); font-weight: 600; text-decoration: none; margin: 12px 0 }
+.disclaimer { border: 1px solid var(--line); border-left: 4px solid var(--pledged); background: var(--pledged-soft); border-radius: 6px; padding: 12px 14px }
 .disclaimer label { display: flex; gap: 8px; align-items: center; font-weight: 600 }
 .disclaimer input { width: auto }
-.filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px }
+.filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px }
 @media (max-width: 640px) { .filters { grid-template-columns: 1fr 1fr } }
-select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
+select, input, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 100% }
 .filters select { width: 100%; min-width: 0 }
+select { -webkit-appearance: none; appearance: none; padding-right: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; overflow: hidden }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; margin-bottom: 14px; overflow: hidden }
 .card-btn { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; width: 100%; padding: 18px; cursor: pointer }
 .card-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px }
 .card-btn > div { min-width: 0 }
@@ -73,16 +79,16 @@ select, input, textarea { font: inherit; color: var(--ink); background: var(--su
 .statement { margin: 0; white-space: pre-line }
 .wc { font-size: 14px; color: var(--muted); font-family: var(--mono) }
 .wc.over { color: var(--danger); font-weight: 600 }
-.pill { font-size: 14px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap }
+.pill { font-size: 14px; font-weight: 600; padding: 3px 10px; border-radius: 4px; white-space: nowrap }
 .pill.open { color: var(--accent); background: var(--accent-soft) }
 .pill.pledged { color: var(--pledged); background: var(--pledged-soft) }
 .pill.paid { color: var(--paid); background: var(--paid-soft) }
 .urgent { color: var(--pledged); font-weight: 600 }
-button { font: inherit; font-weight: 600; font-size: 16px; border-radius: 8px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface) }
+button { font: inherit; font-weight: 600; font-size: 16px; border-radius: 4px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface) }
 button.ghost { background: transparent; color: var(--accent) }
 button:disabled { opacity: .5; cursor: not-allowed }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-.panel { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px }
+.panel { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 10px }
 .panel p { margin: 0 }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 16px }
 .kv dt { color: var(--muted) } .kv dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere }
@@ -92,30 +98,30 @@ button:disabled { opacity: .5; cursor: not-allowed }
 .radio-row input { width: auto }
 .sponsor-line { font-size: 15px; color: var(--muted) }
 .history { font-size: 14px; color: var(--muted) }
-form.apply, .box { display: grid; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px }
+form.apply, .box { display: grid; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px }
 .field { display: grid; gap: 6px }
 .field label, .lbl { font-weight: 600; font-size: 16px }
 .label-row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
 .hint { font-size: 15px; color: var(--muted); font-weight: 400 }
 .err { font-size: 15px; color: var(--danger); margin: 0 }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px }
-.fixed { font-weight: 600; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-family: var(--mono) }
-.waivers { font-size: 15px; color: var(--muted); background: var(--bg); border-radius: 8px; padding: 10px 12px }
+.fixed { font-weight: 600; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); font-family: var(--mono) }
+.waivers { font-size: 15px; color: var(--muted); background: var(--bg); border-radius: 4px; padding: 10px 12px }
 .waivers ul { margin: 4px 0 0; padding-left: 18px }
 .appno { font-family: var(--mono); font-size: 26px; letter-spacing: .04em }
 .mono { font-family: var(--mono) }
 body.busy { cursor: progress }
-.codebox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 16px }
+.codebox { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; font-size: 16px }
 .codebox summary { cursor: pointer; font-weight: 600; color: var(--accent) }
 #mine:not(:empty) { margin-bottom: 14px }
 .h3 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 18px 0 10px }
 .pill.pool { color: var(--pledged); background: var(--pledged-soft) }
-.bar { display: flex; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; width: 100% }
+.bar { display: flex; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; width: 100% }
 .bar span { display: block; height: 100% }
 .b-paid { background: var(--paid) } .b-pledged { background: var(--pledged) }
 .bar-row { grid-column: 1 / -1; margin-top: 10px }
 .pool-list { display: grid; gap: 8px; margin-bottom: 18px }
-.pool-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(80px, 1fr) auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer }
+.pool-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(80px, 1fr) auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; cursor: pointer }
 .pool-row:hover, .pool-row:focus-visible { border-color: var(--accent); outline: none }
 .pool-who { display: grid; min-width: 0 } .pool-who .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .pool-left { font-family: var(--mono); font-size: 16px; white-space: nowrap; font-variant-numeric: tabular-nums }
@@ -139,22 +145,22 @@ footer a:hover { text-decoration: underline }
 .about h1 { margin-top: 6px; font-size: clamp(26px, 3.6vw, 36px); text-wrap: wrap; max-width: none }
 .about h2 { margin-top: 30px }
 .about p, .about li { font-size: 18px; line-height: 1.65 }
-.note { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--pledged); border-radius: 12px; padding: 6px 22px 14px; margin-top: 14px }
+.note { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--pledged); border-radius: 6px; padding: 6px 22px 14px; margin-top: 14px }
 .note p { font-family: var(--display); font-size: 19px; line-height: 1.6 }
 .note .sign { font-style: italic; color: var(--muted); text-align: right; margin-top: 4px }
 .steps { padding-left: 22px; display: grid; gap: 8px }
 #view-board h1.fit { font-size: 28px; white-space: nowrap; font-weight: 600; letter-spacing: -0.015em; line-height: 1.1 }
-.hl-fee { color: var(--pledged) }
-.hl-phd { color: var(--accent) }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 16px; max-width: calc(100% - 32px); z-index: 30 }
+.hl-fee { color: var(--accent) }
+.hl-phd { background: linear-gradient(transparent 64%, var(--gold) 64%, var(--gold) 92%, transparent 92%) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 4px; font-size: 16px; max-width: calc(100% - 32px); z-index: 30 }
 .thanks { columns: 2 220px; gap: 24px; font-size: 16px }
 .thanks div { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line) }
 footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 .scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; padding: 16px; z-index: 20 }
-.modal { background: var(--surface); border-radius: 14px; width: min(440px, 100%); max-height: calc(100% - 32px); overflow: auto; padding: 22px; display: grid; gap: 14px }
+.modal { background: var(--surface); border-radius: 6px; width: min(440px, 100%); max-height: calc(100% - 32px); overflow: auto; padding: 22px; display: grid; gap: 14px }
 .modal h3 { font-family: var(--display); font-weight: 600; font-size: 20px; margin: 0 }
 .methods { display: grid; gap: 8px }
-.method { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; font-weight: 600 }
+.method { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; cursor: pointer; font-weight: 600 }
 .method:hover, .method:focus-visible { border-color: var(--accent); outline: none }
 .method small { font-weight: 400; color: var(--muted); font-size: 14px }
 .sim { font-size: 14px; color: var(--pledged); background: var(--pledged-soft); border-radius: 6px; padding: 6px 10px }
@@ -167,7 +173,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">PhD Fee Bridge<small>Sponsors cover UMass Amherst PhD application fees for students who need a hand</small></div>
+    <div class="brand">UMass Fee Bridge<small>Sponsor a student's future with just $90, the cost of a UMass Amherst application fee.</small></div>
     <nav>
       <a href="#board" id="nav-board">Sponsor board</a>
       <a href="#apply" id="nav-apply">Apply</a>
@@ -179,8 +185,8 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
     <span class="actions"><button class="ghost" id="skip">Skip ahead 6 hours</button><button class="ghost" id="reset">Reset demo</button></span></div>
 
   <main id="view-board">
-    <h1 class="fit" id="board-title">Don't let <span class="hl-fee">$90</span> stop a <span class="hl-phd">future PhD.</span></h1>
-    <p class="lede">Tap an applicant to read their research statement. Cover the whole $90 fee, or chip in part and pool with others. Nobody pays until a fee is fully pledged; then everyone has 24 hours to pay their share.</p>
+    <h1 class="fit" id="board-title">Don't let <span class="hl-fee">$90</span> stop a <span class="hl-phd">future student.</span></h1>
+    <p class="lede">Tap an applicant to read their statement. Cover the whole $90 fee, or chip in part and pool with others. Nobody pays until a fee is fully pledged; then everyone has 24 hours to pay their share.</p>
     <div class="stats" id="stats"></div>
     <details class="codebox" id="code-box"><summary>Already pledged? Enter your pledge code</summary>
       <form id="code-form" novalidate class="grid2" style="margin-top:12px">
@@ -193,7 +199,8 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
     <div id="pools"></div>
     <div class="filters">
       <select id="f-region" aria-label="Filter by region"><option value="">All regions</option></select>
-      <select id="f-field" aria-label="Filter by research area"><option value="">All research areas</option></select>
+      <select id="f-stage" aria-label="Filter by level"><option value="">All levels</option><option>Undergraduate</option><option>Graduate</option></select>
+      <select id="f-field" aria-label="Filter by area of interest"><option value="">All areas</option></select>
       <select id="f-country" aria-label="Filter by country"><option value="">All countries</option></select>
       <select id="f-status" aria-label="Filter by status"><option value="">Any status</option><option value="open">Needs a sponsor</option><option value="pledged">Pledged</option><option value="paid">Paid</option></select>
     </div>
@@ -204,7 +211,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
   <main id="view-apply" hidden>
     <h1>Ask for help with your UMass Amherst application fee</h1>
-    <p class="lede">Open to students from any country. One application per person, and we'll email you a code to confirm your address. <a href="#about">Who runs this?</a> Sponsors see your name, country, program and research statement. Your email and UMass applicant ID stay private and are shown only to the sponsor who pledges.</p>
+    <p class="lede">Open to students from any country. One application per person, and we'll email you a code to confirm your address. <a href="#about">Who runs this?</a> Sponsors see your name, country, program and statement. Your email and UMass applicant ID stay private and are shown only to the sponsor who pledges.</p>
     <form class="apply" id="apply-form" novalidate>
       <div class="grid2">
         <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name"></div>
@@ -212,23 +219,25 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
       </div>
       <div class="grid2">
         <div class="field"><label for="a-country">Country of origin</label><select id="a-country"><option value="">Choose your country</option></select></div>
-        <div class="field"><label for="a-field">Research area</label><input id="a-field" placeholder="e.g. Soft matter physics"></div>
+        <div class="field"><label for="a-field">Area of interest</label><input id="a-field" placeholder="e.g. Public health, soft matter physics"></div>
       </div>
       <div class="grid2">
-        <div class="field"><label for="a-program">Program</label><select id="a-program"><option value="">Choose a UMass Amherst program</option></select></div>
-        <div class="field"><label for="a-level">Degree</label><select id="a-level" disabled><option value="">Choose a program first</option></select></div>
+        <div class="field"><label for="a-stage">Applying as</label><select id="a-stage"><option value="">Choose one</option><option>Undergraduate</option><option>Graduate</option></select></div>
+        <div class="field"><label for="a-level">Applicant type</label><select id="a-level" disabled><option value="">Choose undergraduate or graduate first</option></select></div>
       </div>
+      <div class="field" id="a-program-wrap"><label for="a-program">Graduate program</label><select id="a-program"><option value="">Choose a UMass Amherst graduate program</option></select></div>
+      <div class="field" id="a-major-wrap" hidden><label for="a-major">Intended major</label><input id="a-major" placeholder="e.g. Biology, or Undecided"></div>
       <div class="grid2">
-        <div class="field"><span class="lbl">Application fee</span><div class="fixed">$90.00</div><span class="hint">UMass charges the same fee for every program.</span></div>
+        <div class="field"><span class="lbl">Application fee</span><div class="fixed">$90.00</div><span class="hint">UMass charges $90 for undergraduate and graduate applications.</span></div>
         <div class="field"><label for="a-deadline">Program deadline</label><input id="a-deadline" type="date"></div>
       </div>
-      <div class="field"><label for="a-umassid">UMass applicant ID <span class="hint">(private)</span></label><input id="a-umassid" placeholder="From your UMass application account">
+      <div class="field"><label for="a-umassid">Applicant ID <span class="hint">(private)</span></label><input id="a-umassid" placeholder="Your Common App ID (undergraduate) or UMass applicant ID (graduate)">
         <span class="hint">Lets the sponsor's payment be matched to your application.</span></div>
       <div class="field"><label for="a-paylink">UMass payment link <span class="hint">(optional, private)</span></label><input id="a-paylink" type="url" placeholder="https://applygrad.umass.edu/...">
         <span class="hint">If your UMass application portal gives you a link someone else can use to pay your fee, paste it here. Only a sponsor covering your full fee sees it, and it opens UMass's own card payment page. You can add it later in Track my application.</span></div>
       <div class="field">
-        <div class="label-row"><label for="a-statement">Your research statement</label><span class="wc" id="a-wc">0 / 150 words</span></div>
-        <textarea id="a-statement" rows="7" placeholder="What you want to research at UMass, why it matters to you, and what you've done so far."></textarea>
+        <div class="label-row"><label for="a-statement">Your statement</label><span class="wc" id="a-wc">0 / 150 words</span></div>
+        <textarea id="a-statement" rows="7" placeholder="What you want to study at UMass, why it matters to you, and what you've done so far."></textarea>
         <span class="hint">Up to 150 words. Sponsors read this when they open your card.</span>
       </div>
       <div class="waivers"><b>Check for a fee waiver first.</b> UMass waives the fee for:
@@ -272,7 +281,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
         <div class="field"><label for="s-cycles">Which cycle</label><select id="s-cycles"></select></div>
       </div>
       <div class="grid2">
-        <div class="field"><label for="s-field">Research area you care about <span class="hint">(optional)</span></label><input id="s-field" placeholder="e.g. Public health"></div>
+        <div class="field"><label for="s-field">Area you care about <span class="hint">(optional)</span></label><input id="s-field" placeholder="e.g. Public health"></div>
         <div class="field"><label for="s-country">Region or country you care about <span class="hint">(optional)</span></label><select id="s-country"><option value="">Anywhere</option></select></div>
       </div>
       <span class="hint">If you pick an area, region or country, we'll also email you when a matching applicant applies.</span>
@@ -293,10 +302,10 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
   <main id="view-about" hidden>
     <article class="about">
-      <p class="eyebrow">About PhD Fee Bridge</p>
+      <p class="eyebrow">About UMass Fee Bridge</p>
       <h1>By graduate students and friends, for graduate students.</h1>
       <div class="note">
-        <p>We're not rich. We're PhD students, recent graduates and members of the wider community. Many of us were once exactly where you are: an application ready to go, and a fee standing between us and the submit button. We dared to dream, and we know how unfair it feels when something this small gets in the way.</p>
+        <p>We're not rich. We're graduate students, recent graduates and members of the wider community. Many of us were once exactly where you are: an application ready to go, and a fee standing between us and the submit button. We dared to dream, and we know how unfair it feels when something this small gets in the way.</p>
         <p>This is our small gift to you. It won't cover everything, but it can make sure the fee isn't what stops you.</p>
         <p>Good luck with your application. We're cheering for you.</p>
         <p class="sign">Kyatha and friends</p>
@@ -304,7 +313,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
       <h2>How it works</h2>
       <ol class="steps">
-        <li><b>Apply.</b> Students from anywhere applying for a PhD or MS/PhD at UMass Amherst share a short research statement and verify their email.</li>
+        <li><b>Apply.</b> Students from anywhere applying to UMass Amherst, undergraduate or graduate, share a short statement and verify their email.</li>
         <li><b>Sponsors step in.</b> One sponsor covers the whole $90 fee, or several chip in and pool their shares. Nobody pays until a fee is fully pledged.</li>
         <li><b>The fee gets paid.</b> Sponsors pay within 24 hours, the fee goes to UMass, and the applicant confirms once their application shows it as paid.</li>
       </ol>
@@ -313,10 +322,10 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
       <p>Pool shares go into one account run by the organisers, and every dollar goes to UMass Amherst application fees. Nobody takes a cut. We keep a record of every pledge and payment, and any pledge that doesn't complete is released, so nothing is charged.</p>
 
       <h2>No guarantees, just community</h2>
-      <p>PhD Fee Bridge connects applicants with people who want to help. We can't promise that every request will be covered, and we don't pay fees ourselves. Every fee here is covered by a volunteer sponsor's choice. We're not part of UMass Amherst and can't affect admissions decisions. A covered fee only means one less thing standing between you and submitting your application.</p>
+      <p>UMass Fee Bridge connects applicants with people who want to help. We can't promise that every request will be covered, and we don't pay fees ourselves. Every fee here is covered by a volunteer sponsor's choice. We're not part of UMass Amherst and can't affect admissions decisions. A covered fee only means one less thing standing between you and submitting your application.</p>
 
       <h2>Your privacy</h2>
-      <p>Sponsors see an applicant's name, country, program and research statement. Email addresses, UMass applicant IDs and application numbers are never shown publicly. The sponsor who pays a fee sees the application number and UMass ID so the payment reaches the right application. Sponsors can always stay anonymous.</p>
+      <p>Sponsors see an applicant's name, country, program and statement. Email addresses, UMass applicant IDs and application numbers are never shown publicly. The sponsor who pays a fee sees the application number and UMass ID so the payment reaches the right application. Sponsors can always stay anonymous.</p>
 
       <h2>Get in touch</h2>
       <p>Questions, or want to help as a sponsor or volunteer? Email us at <span class="mono" id="contact-email">mkyatha@umass.edu</span>.</p>
@@ -343,7 +352,7 @@ footer { margin-top: 32px; font-size: 14px; color: var(--muted) }
 
 <script src="config.js"></script>
 <script>
-const PROGRAMS = [["Accounting",["PhD"]],["Afro-American Studies",["PhD"]],["Animal Biotechnology & Biomedical Sciences",["PhD"]],["Anthropology",["PhD"]],["Astronomy",["PhD"]],["Biomedical Engineering",["PhD"]],["Biostatistics: Public Health",["PhD"]],["Chemical Engineering",["PhD"]],["Chemistry",["PhD"]],["Civil Engineering",["PhD"]],["Communication",["PhD"]],["Community Health Education: Public Health",["PhD"]],["Comparative Literature",["PhD"]],["Computer Science",["PhD"]],["Earth, Geographic, and Climate Sciences",["PhD"]],["Economics",["PhD"]],["Education",["PhD"]],["Electrical and Computer Engineering",["PhD"]],["English",["PhD"]],["Environmental Conservation",["PhD"]],["Environmental Engineering",["PhD"]],["Environmental Health Sciences: Public Health",["PhD"]],["Epidemiology: Public Health",["PhD"]],["Food Science",["PhD"]],["German and Scandinavian Studies",["PhD"]],["Health Policy and Management: Public Health",["PhD"]],["Hispanic Literatures and Linguistics",["PhD"]],["History",["PhD"]],["Industrial Engineering and Operations Research",["PhD"]],["Kinesiology",["PhD"]],["Linguistics",["PhD"]],["Management: Doctoral Program",["PhD"]],["Materials Science and Engineering",["PhD"]],["Mathematics",["PhD"]],["Mechanical Engineering",["PhD"]],["Microbiology",["PhD"]],["Molecular & Cellular Biology",["PhD"]],["Music",["PhD"]],["Neuroscience & Behavior",["PhD"]],["Nursing",["PhD"]],["Nutrition: Public Health",["PhD"]],["Organismic & Evolutionary Biology",["PhD"]],["Philosophy",["MA/PhD"]],["Physics",["PhD"]],["Plant & Soil Sciences",["PhD"]],["Plant Biology",["PhD"]],["Political Science",["PhD"]],["Polymer Science and Engineering",["MS/PhD"]],["Psychological and Brain Sciences",["PhD"]],["Regional Planning",["PhD"]],["School Psychology",["PhD"]],["Sociology",["PhD"]],["Speech, Language, and Hearing Sciences",["PhD"]],["Statistics",["PhD"]]];
+const PROGRAMS = [["Accounting",[]],["Afro-American Studies",[]],["Animal Biotechnology & Biomedical Sciences",[]],["Anthropology",[]],["Architecture",[]],["Art",[]],["Astronomy",[]],["Biomedical Engineering",[]],["Biostatistics: Public Health",[]],["Business Analytics",[]],["Chemical Engineering",[]],["Chemistry",[]],["Chinese",[]],["Civil Engineering",[]],["Communication",[]],["Community Health Education: Public Health",[]],["Comparative Literature",[]],["Computer Science",[]],["Data Analytics and Computational Social Science",[]],["Design",[]],["Earth, Geographic, and Climate Sciences",[]],["Economics",[]],["Education",[]],["Education: School Counselor",[]],["Electrical and Computer Engineering",[]],["Engineering Management",[]],["English",[]],["Environmental Conservation",[]],["Environmental Engineering",[]],["Environmental Health Sciences: Public Health",[]],["Epidemiology: Public Health",[]],["Finance",[]],["Food Science",[]],["French & Francophone Studies",[]],["Geography",[]],["German and Scandinavian Studies",[]],["Health Policy and Management: Public Health",[]],["Healthcare Administration",[]],["Higher Education Leadership and Administration",[]],["Hispanic Literatures and Linguistics",[]],["History",[]],["History of Art and Architecture",[]],["Industrial Engineering and Operations Research",[]],["Italian Studies",[]],["Japanese",[]],["Kinesiology",[]],["Labor Studies",[]],["Landscape Architecture",[]],["Latin and Classical Humanities",[]],["Linguistics",[]],["Management",[]],["Management: Doctoral Program",[]],["Management: Dual Degree Programs",[]],["Manufacturing Engineering",[]],["Materials Science and Engineering",[]],["Mathematics",[]],["Mathematics: Applied Mathematics",[]],["Mechanical Engineering",[]],["Microbiology",[]],["Microbiology: Applied Molecular Biotechnology",[]],["Molecular & Cellular Biology",[]],["Music",[]],["Neuroscience & Behavior",[]],["Nursing",[]],["Nutrition: Public Health",[]],["Organismic & Evolutionary Biology",[]],["Philosophy",[]],["Physics",[]],["Plant & Soil Sciences",[]],["Plant Biology",[]],["Political Science",[]],["Polymer Science and Engineering",[]],["Psychological and Brain Sciences",[]],["Public Health",[]],["Public Health: Global Health",[]],["Public Health: Public Health Practice",[]],["Public Health: Worcester MPH",[]],["Public Policy and Administration",[]],["Regional Planning",[]],["Resource Economics",[]],["School Psychology",[]],["Sociology",[]],["Speech, Language, and Hearing Sciences",[]],["Sport Management",[]],["Statistics",[]],["Sustainability Science",[]],["Theater",[]]];
 /* ===== Shared rules: the same code runs in Google Apps Script (Sheet mode) and in the browser (preview mode). ===== */
 var FEE = 90;                    // UMass Amherst graduate application fee, USD
 var MIN_SHARE = 5;               // smallest pool contribution, USD
@@ -352,7 +361,7 @@ var CONFIRM_MS = 7 * 24 * 3600e3; // a paid fee counts as confirmed if the appli
 var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
 
 var TABLES = {
-  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink"],
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink", "stage"],
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
@@ -362,7 +371,10 @@ var COUNTRIES = Object.keys(REGIONS).reduce(function (a, r) { return a.concat(RE
 function regionOf(c) { for (var r in REGIONS) if (REGIONS[r].indexOf(c) >= 0) return r; return ""; }
 function prefMatches(pref, country) { return !!pref && (pref === country || pref === "region:" + regionOf(country)); }
 
-var LEVELS = ["PhD", "MS/PhD"];
+var STAGES = { Undergraduate: ["First-year", "Transfer"], Graduate: ["Master's", "PhD", "MS/PhD"] };
+var LEVELS = STAGES.Undergraduate.concat(STAGES.Graduate);
+function stageOf(a) { return a.stage || "Graduate"; }
+function levelLabel(a) { return stageOf(a) === "Undergraduate" ? a.level + " undergrad" : a.level; }
 var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function rnd(n) { var s = ""; for (var i = 0; i < n; i++) s += ALPH[Math.floor(Math.random() * ALPH.length)]; return s; }
 function wordCount(t) { return (String(t || "").trim().match(/\S+/g) || []).length; }
@@ -398,7 +410,7 @@ function statusOf(pool) { return pool.paid >= FEE ? "paid" : pool.committed >= F
 function pubApp(db, a) {
   var pool = poolOf(db, a), st = statusOf(pool);
   if (st === "paid" && a.confirmedAt) st = "confirmed";
-  return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
+  return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, stage: stageOf(a), levelLabel: levelLabel(a), deadline: a.deadline,
     waiver: a.waiver, statement: a.statement, region: regionOf(a.country), status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
 /* Applicants may paste the third-party payment link from their UMass portal. Only umass.edu links are accepted. */
@@ -430,7 +442,7 @@ function sponsorView(db, s) {
 
 function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.payLink = a.payLink || ""; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
 function sendCode(db, a) {
-  db.mail(a.email, "Your PhD Fee Bridge verification code: " + a.verifyCode,
+  db.mail(a.email, "Your UMass Fee Bridge verification code: " + a.verifyCode,
     "Hi " + a.name.split(" ")[0] + ",\n\nYour verification code is " + a.verifyCode + ". Enter it on the site to put your request on the sponsor board.\n\nYour application number is " + a.appNo + ". Keep it private.\n\n" + db.site + "#track");
 }
 function syncApp(db, a) {
@@ -496,7 +508,9 @@ function handle(req, db) {
     var d = req.data || {}, keys = ["name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement"];
     keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
     if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
-    if (LEVELS.indexOf(String(d.level).trim()) < 0) fail("Choose PhD or MS/PhD.");
+    var stg = String(d.stage || "").trim();
+    if (!STAGES[stg]) fail("Choose undergraduate or graduate.");
+    if (STAGES[stg].indexOf(String(d.level).trim()) < 0) fail(stg === "Undergraduate" ? "Choose first-year or transfer." : "Choose Master's, PhD or MS/PhD.");
     if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("Choose your country from the list.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
     if (A.all().some(function (x) { return lc(x.email) === lc(d.email); })) fail("There's already an application with this email. One application per person: use Track my application to see it.");
@@ -504,7 +518,7 @@ function handle(req, db) {
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
     var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0, verified: "false", verifyCode: String(Math.floor(100000 + Math.random() * 900000)) };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
-    o.payLink = cleanLink(d.payLink);
+    o.payLink = cleanLink(d.payLink); o.stage = stg;
     A.add(o); db.log(o.appNo, "applied (not yet verified)", o.country + ", " + o.program);
     sendCode(db, o);
     var out = { appNo: o.appNo }; if (db.demo) out.demoCode = o.verifyCode;
@@ -517,11 +531,11 @@ function handle(req, db) {
   if (act === "verify") {
     var va = appByNo();
     if (!yes(va.verified)) {
-      if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from PhD Fee Bridge.");
+      if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from UMass Fee Bridge.");
       va.verified = "true"; A.save(va); db.log(va.appNo, "email verified", "");
       db.mail(va.email, "You're on the sponsor board", "Hi " + va.name.split(" ")[0] + ",\n\nYour email is verified and your request is now on the sponsor board. Keep your application number " + va.appNo + " private, and use it with this email to track your application.\n\n" + db.site + "#track");
       S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(va.field).indexOf(lc(s.prefField)) >= 0) || prefMatches(s.prefCountry, va.country)); })
-        .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
+        .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + levelLabel(va) + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     }
     return trackView(db, va);
   }
@@ -627,7 +641,7 @@ function remind(db) {
     var tags = String(s.reminded || "").split(",").filter(String), left = Math.max(0, num(s.students) - usedThisCycle(db, s.email, c));
     function send(tag, subject, body) { if (tags.indexOf(tag) >= 0 || left <= 0) return; db.mail(s.email, subject, body + "\n\nYour sponsor code is " + s.code + " if you want to change or stop your commitment: " + db.site + "#sponsor"); tags.push(tag); sent++; }
     send("open-" + c, "Fall " + c + " applications are open", "The UMass Amherst application season is here. You committed to cover " + num(s.students) + " student" + (num(s.students) > 1 ? "s" : "") + "' fees this cycle, and " + open + " applicants are waiting.\n\n" + db.site);
-    if (m === 12 || m === 1) send("dec-" + c, "Many UMass deadlines are in December", "Most PhD deadlines fall in December and early January. " + open + " applicants still need help, and you have " + Math.ceil(left) + " of your " + num(s.students) + " left this cycle.\n\n" + db.site);
+    if (m === 12 || m === 1) send("dec-" + c, "Many UMass deadlines are in December", "Most graduate and many undergraduate deadlines fall in December and early January. " + open + " applicants still need help, and you have " + Math.ceil(left) + " of your " + num(s.students) + " left this cycle.\n\n" + db.site);
     s.reminded = tags.join(","); S.save(s);
   });
   return sent;
@@ -653,7 +667,11 @@ function seedData(now) {
     { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0, verified: "true",
       statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." },
     { id: "anil0001", appNo: "FB-26-4158", createdAt: now - 10 * H, name: "Anil Gurung", email: "anil@example.com", umassId: "UMA-118901", country: "Nepal", field: "Civil engineering", program: "Civil Engineering", level: "PhD", deadline: "2026-12-15", waiver: "Waiver request was declined", status: "open", releases: 0, verified: "true",
-      statement: "Landslides close Nepal's mountain roads every monsoon, cutting villages off from markets and hospitals for weeks. I want to develop low-cost slope monitoring that district engineers can install and read themselves.\n\nAfter my bachelor's at Tribhuvan University I spent three years with a road maintenance team in Gandaki Province, logging every slope failure on a 90 km stretch. That data shows clear warning patterns that nobody has had time to model.\n\nAt UMass Amherst I hope to combine geotechnical engineering with simple sensor networks, and bring the results back to the teams who keep these roads open." }
+      statement: "Landslides close Nepal's mountain roads every monsoon, cutting villages off from markets and hospitals for weeks. I want to develop low-cost slope monitoring that district engineers can install and read themselves.\n\nAfter my bachelor's at Tribhuvan University I spent three years with a road maintenance team in Gandaki Province, logging every slope failure on a 90 km stretch. That data shows clear warning patterns that nobody has had time to model.\n\nAt UMass Amherst I hope to combine geotechnical engineering with simple sensor networks, and bring the results back to the teams who keep these roads open." },
+    { id: "lucia001", appNo: "FB-26-4160", createdAt: now - 6 * H, name: "Lucía Ramírez", email: "lucia@example.com", umassId: "CA-2210457", country: "Guatemala", field: "Biology", program: "Biology", stage: "Undergraduate", level: "First-year", deadline: "2027-01-15", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
+      statement: "I grew up in Quetzaltenango, where my grandmother treats half the neighbourhood with plants from her garden. I want to study biology to understand why some of those remedies work and others don't.\n\nAt school I started a small project testing garden plant extracts against bacteria, with help from a teacher who lent me lab space after hours. It won our regional science fair.\n\nUMass Amherst is my first choice. International applicants can't get a fee waiver, and $90 is more than a week of my family's income." },
+    { id: "jordan01", appNo: "FB-26-4162", createdAt: now - 3 * H, name: "Jordan Ellis", email: "jordan@example.com", umassId: "CA-2214881", country: "United States", field: "Nursing", program: "Nursing", stage: "Undergraduate", level: "Transfer", deadline: "2027-03-01", waiver: "Waiver request was declined", status: "open", releases: 0, verified: "true",
+      statement: "I'm finishing my associate degree at Holyoke Community College while working nights as a nursing assistant. I want to transfer to UMass Amherst to complete a BS in Nursing and become a registered nurse in western Massachusetts, where rural clinics can't find enough staff.\n\nI'm the first in my family to go to college and I support my younger brother. My Common App fee waiver request didn't go through, and right now $90 is a week of groceries.\n\nA sponsor would help me take the next step." }
   ].map(function (o) { return fill(TABLES.Applications, o); });
   var pledges = [
     { code: "PL-H7KQ", appId: "wanjiru1", createdAt: now - 17 * H, sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", amount: 90, status: "due", dueAt: now + 7 * H },
@@ -675,7 +693,7 @@ function seedData(now) {
 /* ===== Website ===== */
 var API_URL = (window.FEE_BRIDGE_API || "").trim();
 var REMOTE = !!API_URL;
-var KEY = "feebridge-v6";
+var KEY = "feebridge-v7";
 const $ = id => document.getElementById(id);
 const usd = n => "$" + Number(n).toFixed(0);
 const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -758,7 +776,7 @@ function renderBoard() {
   const S = data.students, need = S.filter(s => s.status === "open" || s.status === "pooling");
   $("stats").innerHTML = `
     <div class="s-need"><b>${need.length}</b>fees still need sponsors</div>
-    <div class="s-need"><b>${usd(need.reduce((a, s) => a + s.pool.left, 0))}</b>still needed</div>
+    <div class="s-left"><b>${usd(need.reduce((a, s) => a + s.pool.left, 0))}</b>still needed</div>
     <div class="s-pool"><b>${S.filter(s => s.status === "pooling").length}</b>pools filling</div>
     <div class="s-paid"><b>${S.filter(s => s.status === "paid" || s.status === "confirmed").length}</b>fees covered</div>
     ${data.promised ? `<div class="s-promised"><b>${data.promised}</b>more promised by committed sponsors for Fall ${data.cycle}</div>` : ""}`;
@@ -776,16 +794,16 @@ function renderBoard() {
     </div>`).join("") : "";
 
   const pr = $("f-region").value, pc = $("f-country").value;
-  const pools = S.filter(s => s.status === "pooling" && (!pr || s.region === pr) && (!pc || s.country === pc)).sort((a, b) => a.pool.left - b.pool.left);
+  const pools = S.filter(s => s.status === "pooling" && (!$("f-stage").value || s.stage === $("f-stage").value) && (!pr || s.region === pr) && (!pc || s.country === pc)).sort((a, b) => a.pool.left - b.pool.left);
   $("pools").innerHTML = pools.length ? `<h2 class="h3">Pools waiting to fill</h2><div class="pool-list">` + pools.map(s => `
     <button class="pool-row" data-act="chip" data-id="${s.id}">
-      <span class="pool-who"><b>${esc(s.name)}</b><span class="meta">${esc(s.level)}, ${esc(s.program)}</span></span>
+      <span class="pool-who"><b>${esc(s.name)}</b><span class="meta">${esc(s.levelLabel || s.level)}, ${esc(s.program)}</span></span>
       ${bar(s)}<span class="pool-left"><b>${usd(s.pool.left)}</b> left</span>
     </button>`).join("") + `</div>` : "";
 
-  const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value, fr = $("f-region").value;
+  const ff = $("f-field").value, fc = $("f-country").value, fs = $("f-status").value, fr = $("f-region").value, fg = $("f-stage").value;
   const order = { pooling: 0, open: 1, funding: 2, paid: 3 };
-  const list = S.filter(s => s.status !== "confirmed").filter(s => (!fr || s.region === fr) && (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
+  const list = S.filter(s => s.status !== "confirmed").filter(s => (!fg || s.stage === fg) && (!fr || s.region === fr) && (!ff || s.field === ff) && (!fc || s.country === fc) && (!fs || s.status === fs))
     .sort((a, b) => order[a.status] - order[b.status] || new Date(a.deadline) - new Date(b.deadline));
   $("cards").innerHTML = list.length ? list.map(card).join("") : `<p class="lede">${S.some(s => s.status !== "confirmed") ? "No applicants match these filters." : "No applications yet. Once someone applies, they'll appear here."}</p>`;
 
@@ -844,7 +862,7 @@ function card(s) {
   return `<article class="card" id="card-${s.id}">
     <button class="card-btn" data-act="toggle" data-id="${s.id}" aria-expanded="${isOpen}" aria-controls="detail-${s.id}">
       <div><div class="who">${esc(s.name)}</div>
-        <div class="meta">From ${esc(s.country)} · ${esc(s.level)}, ${esc(s.program)} · ${due}</div>
+        <div class="meta">From ${esc(s.country)} · ${esc(s.levelLabel || s.level)}, ${esc(s.program)} · ${due}</div>
         <span class="tag">${esc(s.field)}</span></div>
       <div class="side"><span class="fee">${usd(FEE)}</span>${pill(s)}</div>
       ${bar(s) ? `<div class="bar-row">${bar(s)}</div>` : ""}
@@ -882,7 +900,7 @@ $("view-board").addEventListener("click", e => {
     mine = mine.filter(x => x.code !== code); delete views[code]; saveMine(); toast("Pledge released. That amount is open again."); await refresh();
   });
 });
-["f-field", "f-country", "f-status"].forEach(id => $(id).addEventListener("change", renderBoard));
+["f-stage", "f-field", "f-country", "f-status"].forEach(id => $(id).addEventListener("change", renderBoard));
 $("f-region").addEventListener("change", () => { $("f-country").value = ""; fillFilters(); renderBoard(); });
 $("view-board").addEventListener("input", e => { if (e.target.id === "p-amt") document.querySelectorAll(".chip").forEach(c => c.classList.remove("on")); });
 
@@ -906,9 +924,9 @@ function closeCheckout() { $("scrim").hidden = true; co = null; refresh(); }
 function drawCheckout() {
   const m = $("modal"), v = co.v, s = v.app;
   const head = `<div class="label-row"><h3 id="m-title">${co.step === "done" ? "Payment complete" : "Pay your share"}</h3><button class="ghost" data-m="close" aria-label="Close" style="padding:2px 10px">×</button></div>`;
-  const share = v.amount < FEE ? `<p class="hint" style="margin:0">Your ${usd(v.amount)} goes to the PhD Fee Bridge pool account. When every share is in, the organiser pays the ${usd(FEE)} fee to UMass Amherst.</p>` : "";
+  const share = v.amount < FEE ? `<p class="hint" style="margin:0">Your ${usd(v.amount)} goes to the UMass Fee Bridge pool account. When every share is in, the organiser pays the ${usd(FEE)} fee to UMass Amherst.</p>` : "";
   if (co.step === "method") m.innerHTML = `${head}
-    <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(v.appNo)}</dd><dt>Program</dt><dd>${esc(s.level)}, ${esc(s.program)}</dd><dt>Your share</dt><dd>${usd(v.amount)} of ${usd(FEE)}</dd></dl>${share}
+    <dl class="kv"><dt>For</dt><dd>${esc(s.name)} · ${esc(v.appNo)}</dd><dt>Program</dt><dd>${esc(s.levelLabel || s.level)}, ${esc(s.program)}</dd><dt>Your share</dt><dd>${usd(v.amount)} of ${usd(FEE)}</dd></dl>${share}
     ${v.payLink ? `<button class="method umass" data-m="umass" data-v="UMass payment page">Pay on UMass's own payment page <small>Recommended. ${esc(first(s.name))} added their UMass link, so the money goes straight to their application.</small></button><p class="hint" style="margin:0">Or use the simulated checkout:</p>` : ""}
     <div class="methods">
       <button class="method" data-m="card" data-v="Credit card">Credit card <small>Accepted by UMass</small></button>
@@ -973,11 +991,12 @@ function countryGroups(sel, withRegions) {
   });
 }
 countryGroups($("a-country"), false); countryGroups($("s-country"), true);
-$("a-program").addEventListener("change", () => {
-  const p = PROGRAMS.find(([n]) => n === $("a-program").value), sel = $("a-level");
+$("a-stage").addEventListener("change", () => {
+  const st = $("a-stage").value, sel = $("a-level");
   sel.length = 0;
-  if (!p) { sel.add(new Option("Choose a program first", "")); sel.disabled = true; return; }
-  LEVELS.forEach(l => sel.add(new Option(l, l))); sel.disabled = false;
+  if (!STAGES[st]) { sel.add(new Option("Choose undergraduate or graduate first", "")); sel.disabled = true; }
+  else { sel.add(new Option("Choose one", "")); STAGES[st].forEach(l => sel.add(new Option(l, l))); sel.disabled = false; }
+  $("a-major-wrap").hidden = st !== "Undergraduate"; $("a-program-wrap").hidden = st === "Undergraduate";
 });
 $("a-statement").addEventListener("input", () => {
   const n = wordCount($("a-statement").value), wc = $("a-wc"); wc.textContent = `${n} / 150 words`; wc.classList.toggle("over", n > 150);
@@ -986,7 +1005,7 @@ $("apply-form").addEventListener("submit", e => {
   e.preventDefault();
   const v = id => $(id).value.trim(), err = $("form-error");
   const fail = (m, id) => { err.hidden = false; err.textContent = m; if (id) $(id).focus(); };
-  const req = [["a-name", "your name"], ["a-email", "your email"], ["a-country", "your country"], ["a-field", "your research area"], ["a-program", "a program"], ["a-deadline", "the deadline"], ["a-umassid", "your UMass applicant ID"], ["a-statement", "your statement"]];
+  const req = [["a-name", "your name"], ["a-email", "your email"], ["a-country", "your country"], ["a-field", "your area of interest"], ["a-stage", "undergraduate or graduate"], [$("a-stage").value === "Undergraduate" ? "a-major" : "a-program", $("a-stage").value === "Undergraduate" ? "your intended major" : "a graduate program"], ["a-level", "your applicant type"], ["a-deadline", "the deadline"], ["a-umassid", "your UMass applicant ID"], ["a-statement", "your statement"]];
   const miss = req.find(([id]) => !v(id)); if (miss) return fail(`Add ${miss[1]} before submitting.`, miss[0]);
   if (!v("a-email").includes("@")) return fail("Check your email address.", "a-email");
   if (wordCount(v("a-statement")) > 150) return fail(`Your statement is ${wordCount(v("a-statement"))} words. Trim it to 150 or fewer.`, "a-statement");
@@ -995,13 +1014,13 @@ $("apply-form").addEventListener("submit", e => {
   if (!$("a-ack").checked) return fail("Please tick the box to show you understand a sponsor isn't guaranteed.", "a-ack");
   err.hidden = true;
   act(async () => {
-    const d = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-program"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value, payLink: v("a-paylink") };
+    const d = { name: v("a-name"), email: v("a-email"), umassId: v("a-umassid"), country: v("a-country"), field: v("a-field"), program: v("a-stage") === "Undergraduate" ? v("a-major") : v("a-program"), stage: v("a-stage"), level: v("a-level"), deadline: v("a-deadline"), statement: v("a-statement"), waiver: wv.value, payLink: v("a-paylink") };
     let r; try { r = await call({ action: "apply", data: d }); } catch (er) { return fail(er.message); }
     $("done-no").textContent = r.appNo; $("apply-form").hidden = true; $("apply-done").hidden = false;
     pendingVerify = { appNo: r.appNo, email: d.email }; $("v-code").value = ""; $("v-err").hidden = true; $("v-ok").hidden = true; $("v-box").hidden = false;
     $("v-demo").hidden = !r.demoCode; $("v-demo").textContent = r.demoCode ? `Preview mode doesn't send emails. Your code is ${r.demoCode}.` : "";
     $("t-no").value = r.appNo; $("t-email").value = d.email;
-    e.target.reset(); $("a-wc").textContent = "0 / 150 words"; $("a-program").dispatchEvent(new Event("change"));
+    e.target.reset(); $("a-wc").textContent = "0 / 150 words"; $("a-stage").dispatchEvent(new Event("change"));
     refresh();
   });
 });

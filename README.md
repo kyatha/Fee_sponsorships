@@ -1,4 +1,4 @@
-# PhD Fee Bridge (demo)
+# UMass Fee Bridge (demo)
 
 Sponsors cover UMass Amherst graduate application fees ($90) for applicants from African countries. Applicants post a short research statement. Sponsors either cover a whole fee or chip in part and pool with others. Payments in this demo are **simulated**: nothing is charged and no card details are stored.
 
@@ -28,7 +28,7 @@ Not affiliated with or endorsed by UMass Amherst.
 
 ## Connect the Google Sheet (about 5 minutes)
 
-1. Create a new Google Sheet, for example "PhD Fee Bridge data".
+1. Create a new Google Sheet, for example "UMass Fee Bridge data".
 2. Open **Extensions → Apps Script**. Delete what's in `Code.gs`, paste in all of `apps-script/Code.gs`, and save.
 3. In the toolbar, pick the function **setup** and click **Run**, then approve the permissions. Google warns that the app is unverified because it's your own script, so choose Advanced → Go to project. This creates the tabs and a daily 9am job that releases expired pledges and sends reminders.
 4. Optional: run **seedDemo** to add the fictional example data. Emails are never sent to `@example.com` addresses.

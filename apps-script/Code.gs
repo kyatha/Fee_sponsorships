@@ -1,4 +1,4 @@
-/* ===== PhD Fee Bridge: Google Sheet backend =====
+/* ===== UMass Fee Bridge: Google Sheet backend =====
  * Setup (once):
  *   1. In your Google Sheet: Extensions > Apps Script. Paste this whole file into Code.gs and save.
  *   2. Choose the function "setup" in the toolbar and click Run. Approve the permissions.
@@ -74,7 +74,7 @@ function sheetDb() {
     log: function (no, ev, d) { ss.getSheetByName("Log").appendRow([new Date().toISOString(), safe(no), ev, safe(d)]); },
     mail: function (to, subject, body) {
       if (!SEND_EMAILS || String(to).indexOf("@example.com") > 0) return;
-      try { MailApp.sendEmail({ to: to, subject: subject, body: body + "\n\nPhD Fee Bridge (independent, not affiliated with UMass Amherst)", name: "PhD Fee Bridge" }); }
+      try { MailApp.sendEmail({ to: to, subject: subject, body: body + "\n\nUMass Fee Bridge (independent, not affiliated with UMass Amherst)", name: "UMass Fee Bridge" }); }
       catch (e) { ss.getSheetByName("Log").appendRow([new Date().toISOString(), "", "email failed", safe(to + " " + e)]); }
     }
   };
@@ -88,7 +88,7 @@ var CONFIRM_MS = 7 * 24 * 3600e3; // a paid fee counts as confirmed if the appli
 var POOL_MS = 7 * 24 * 3600e3;   // time for a pool to fill before its pledges are released
 
 var TABLES = {
-  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink"],
+  Applications: ["id", "appNo", "createdAt", "name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement", "status", "paidAt", "releases", "verified", "verifyCode", "confirmedAt", "payLink", "stage"],
   Pledges: ["code", "appId", "createdAt", "sponsorName", "sponsorEmail", "sponsorAnon", "amount", "status", "dueAt", "payMethod", "payRef", "paidAt"],
   Sponsors: ["code", "createdAt", "name", "email", "anon", "students", "cycles", "prefField", "prefCountry", "status", "reminded"]
 };
@@ -98,7 +98,10 @@ var COUNTRIES = Object.keys(REGIONS).reduce(function (a, r) { return a.concat(RE
 function regionOf(c) { for (var r in REGIONS) if (REGIONS[r].indexOf(c) >= 0) return r; return ""; }
 function prefMatches(pref, country) { return !!pref && (pref === country || pref === "region:" + regionOf(country)); }
 
-var LEVELS = ["PhD", "MS/PhD"];
+var STAGES = { Undergraduate: ["First-year", "Transfer"], Graduate: ["Master's", "PhD", "MS/PhD"] };
+var LEVELS = STAGES.Undergraduate.concat(STAGES.Graduate);
+function stageOf(a) { return a.stage || "Graduate"; }
+function levelLabel(a) { return stageOf(a) === "Undergraduate" ? a.level + " undergrad" : a.level; }
 var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function rnd(n) { var s = ""; for (var i = 0; i < n; i++) s += ALPH[Math.floor(Math.random() * ALPH.length)]; return s; }
 function wordCount(t) { return (String(t || "").trim().match(/\S+/g) || []).length; }
@@ -134,7 +137,7 @@ function statusOf(pool) { return pool.paid >= FEE ? "paid" : pool.committed >= F
 function pubApp(db, a) {
   var pool = poolOf(db, a), st = statusOf(pool);
   if (st === "paid" && a.confirmedAt) st = "confirmed";
-  return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, deadline: a.deadline,
+  return { id: a.id, name: a.name, country: a.country, field: a.field, program: a.program, level: a.level, stage: stageOf(a), levelLabel: levelLabel(a), deadline: a.deadline,
     waiver: a.waiver, statement: a.statement, region: regionOf(a.country), status: st, pool: pool, releases: num(a.releases), paidAt: num(a.paidAt) };
 }
 /* Applicants may paste the third-party payment link from their UMass portal. Only umass.edu links are accepted. */
@@ -166,7 +169,7 @@ function sponsorView(db, s) {
 
 function trackView(db, a) { var v = pubApp(db, a); v.appNo = a.appNo; v.payLink = a.payLink || ""; v.verified = yes(a.verified); if (!v.verified) v.status = "unverified"; return v; }
 function sendCode(db, a) {
-  db.mail(a.email, "Your PhD Fee Bridge verification code: " + a.verifyCode,
+  db.mail(a.email, "Your UMass Fee Bridge verification code: " + a.verifyCode,
     "Hi " + a.name.split(" ")[0] + ",\n\nYour verification code is " + a.verifyCode + ". Enter it on the site to put your request on the sponsor board.\n\nYour application number is " + a.appNo + ". Keep it private.\n\n" + db.site + "#track");
 }
 function syncApp(db, a) {
@@ -232,7 +235,9 @@ function handle(req, db) {
     var d = req.data || {}, keys = ["name", "email", "umassId", "country", "field", "program", "level", "deadline", "waiver", "statement"];
     keys.forEach(function (k) { if (!String(d[k] || "").trim()) fail("Missing " + k + "."); });
     if (String(d.email).indexOf("@") < 0) fail("Check the email address.");
-    if (LEVELS.indexOf(String(d.level).trim()) < 0) fail("Choose PhD or MS/PhD.");
+    var stg = String(d.stage || "").trim();
+    if (!STAGES[stg]) fail("Choose undergraduate or graduate.");
+    if (STAGES[stg].indexOf(String(d.level).trim()) < 0) fail(stg === "Undergraduate" ? "Choose first-year or transfer." : "Choose Master's, PhD or MS/PhD.");
     if (COUNTRIES.indexOf(String(d.country).trim()) < 0) fail("Choose your country from the list.");
     if (wordCount(d.statement) > 150) fail("The statement is over 150 words.");
     if (A.all().some(function (x) { return lc(x.email) === lc(d.email); })) fail("There's already an application with this email. One application per person: use Track my application to see it.");
@@ -240,7 +245,7 @@ function handle(req, db) {
     var max = A.all().reduce(function (m, r) { return Math.max(m, num(String(r.appNo).split("-")[2])); }, 4299);
     var o = { id: rnd(8), appNo: "FB-26-" + (max + 1), createdAt: t, status: "open", releases: 0, verified: "false", verifyCode: String(Math.floor(100000 + Math.random() * 900000)) };
     keys.forEach(function (k) { o[k] = String(d[k]).trim().slice(0, k === "statement" ? 2000 : 200); });
-    o.payLink = cleanLink(d.payLink);
+    o.payLink = cleanLink(d.payLink); o.stage = stg;
     A.add(o); db.log(o.appNo, "applied (not yet verified)", o.country + ", " + o.program);
     sendCode(db, o);
     var out = { appNo: o.appNo }; if (db.demo) out.demoCode = o.verifyCode;
@@ -253,11 +258,11 @@ function handle(req, db) {
   if (act === "verify") {
     var va = appByNo();
     if (!yes(va.verified)) {
-      if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from PhD Fee Bridge.");
+      if (String(req.code || "").trim() !== va.verifyCode) fail("That code doesn't match. Check the latest email from UMass Fee Bridge.");
       va.verified = "true"; A.save(va); db.log(va.appNo, "email verified", "");
       db.mail(va.email, "You're on the sponsor board", "Hi " + va.name.split(" ")[0] + ",\n\nYour email is verified and your request is now on the sponsor board. Keep your application number " + va.appNo + " private, and use it with this email to track your application.\n\n" + db.site + "#track");
       S.all().filter(function (s) { return matchesCycle(s, cycleOf(t)) && ((s.prefField && lc(va.field).indexOf(lc(s.prefField)) >= 0) || prefMatches(s.prefCountry, va.country)); })
-        .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + va.level + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
+        .forEach(function (s) { db.mail(s.email, "A new applicant matches what you asked for", va.name + " from " + va.country + " (" + levelLabel(va) + ", " + va.program + ") is looking for help with their $" + FEE + " UMass Amherst application fee.\n\n" + db.site); });
     }
     return trackView(db, va);
   }
@@ -363,7 +368,7 @@ function remind(db) {
     var tags = String(s.reminded || "").split(",").filter(String), left = Math.max(0, num(s.students) - usedThisCycle(db, s.email, c));
     function send(tag, subject, body) { if (tags.indexOf(tag) >= 0 || left <= 0) return; db.mail(s.email, subject, body + "\n\nYour sponsor code is " + s.code + " if you want to change or stop your commitment: " + db.site + "#sponsor"); tags.push(tag); sent++; }
     send("open-" + c, "Fall " + c + " applications are open", "The UMass Amherst application season is here. You committed to cover " + num(s.students) + " student" + (num(s.students) > 1 ? "s" : "") + "' fees this cycle, and " + open + " applicants are waiting.\n\n" + db.site);
-    if (m === 12 || m === 1) send("dec-" + c, "Many UMass deadlines are in December", "Most PhD deadlines fall in December and early January. " + open + " applicants still need help, and you have " + Math.ceil(left) + " of your " + num(s.students) + " left this cycle.\n\n" + db.site);
+    if (m === 12 || m === 1) send("dec-" + c, "Many UMass deadlines are in December", "Most graduate and many undergraduate deadlines fall in December and early January. " + open + " applicants still need help, and you have " + Math.ceil(left) + " of your " + num(s.students) + " left this cycle.\n\n" + db.site);
     s.reminded = tags.join(","); S.save(s);
   });
   return sent;
@@ -389,7 +394,11 @@ function seedData(now) {
     { id: "nadia001", appNo: "FB-26-4155", createdAt: now - 20 * H, name: "Nadia Benali", email: "nadia@example.com", umassId: "UMA-118870", country: "Morocco", field: "Linguistics", program: "Linguistics", level: "PhD", deadline: "2027-01-02", waiver: "Waiver request was declined", status: "pooling", releases: 0, verified: "true",
       statement: "Moroccan Darija and Tamazight are spoken by millions but are rarely written down or studied formally. I want to document how speakers switch between Darija, Tamazight and French in everyday conversation, and what that reveals about the grammar of each.\n\nFor my master's at Mohammed V University I recorded forty hours of conversation in Rabat markets and transcribed half of it. UMass Amherst's linguistics department is known for formal theory grounded in fieldwork, which is exactly the combination I want." },
     { id: "anil0001", appNo: "FB-26-4158", createdAt: now - 10 * H, name: "Anil Gurung", email: "anil@example.com", umassId: "UMA-118901", country: "Nepal", field: "Civil engineering", program: "Civil Engineering", level: "PhD", deadline: "2026-12-15", waiver: "Waiver request was declined", status: "open", releases: 0, verified: "true",
-      statement: "Landslides close Nepal's mountain roads every monsoon, cutting villages off from markets and hospitals for weeks. I want to develop low-cost slope monitoring that district engineers can install and read themselves.\n\nAfter my bachelor's at Tribhuvan University I spent three years with a road maintenance team in Gandaki Province, logging every slope failure on a 90 km stretch. That data shows clear warning patterns that nobody has had time to model.\n\nAt UMass Amherst I hope to combine geotechnical engineering with simple sensor networks, and bring the results back to the teams who keep these roads open." }
+      statement: "Landslides close Nepal's mountain roads every monsoon, cutting villages off from markets and hospitals for weeks. I want to develop low-cost slope monitoring that district engineers can install and read themselves.\n\nAfter my bachelor's at Tribhuvan University I spent three years with a road maintenance team in Gandaki Province, logging every slope failure on a 90 km stretch. That data shows clear warning patterns that nobody has had time to model.\n\nAt UMass Amherst I hope to combine geotechnical engineering with simple sensor networks, and bring the results back to the teams who keep these roads open." },
+    { id: "lucia001", appNo: "FB-26-4160", createdAt: now - 6 * H, name: "Lucía Ramírez", email: "lucia@example.com", umassId: "CA-2210457", country: "Guatemala", field: "Biology", program: "Biology", stage: "Undergraduate", level: "First-year", deadline: "2027-01-15", waiver: "Doesn't qualify for a waiver", status: "open", releases: 0, verified: "true",
+      statement: "I grew up in Quetzaltenango, where my grandmother treats half the neighbourhood with plants from her garden. I want to study biology to understand why some of those remedies work and others don't.\n\nAt school I started a small project testing garden plant extracts against bacteria, with help from a teacher who lent me lab space after hours. It won our regional science fair.\n\nUMass Amherst is my first choice. International applicants can't get a fee waiver, and $90 is more than a week of my family's income." },
+    { id: "jordan01", appNo: "FB-26-4162", createdAt: now - 3 * H, name: "Jordan Ellis", email: "jordan@example.com", umassId: "CA-2214881", country: "United States", field: "Nursing", program: "Nursing", stage: "Undergraduate", level: "Transfer", deadline: "2027-03-01", waiver: "Waiver request was declined", status: "open", releases: 0, verified: "true",
+      statement: "I'm finishing my associate degree at Holyoke Community College while working nights as a nursing assistant. I want to transfer to UMass Amherst to complete a BS in Nursing and become a registered nurse in western Massachusetts, where rural clinics can't find enough staff.\n\nI'm the first in my family to go to college and I support my younger brother. My Common App fee waiver request didn't go through, and right now $90 is a week of groceries.\n\nA sponsor would help me take the next step." }
   ].map(function (o) { return fill(TABLES.Applications, o); });
   var pledges = [
     { code: "PL-H7KQ", appId: "wanjiru1", createdAt: now - 17 * H, sponsorName: "Lena Brandt", sponsorEmail: "lena@example.com", sponsorAnon: "false", amount: 90, status: "due", dueAt: now + 7 * H },
